@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#083375" />
+      <stop offset="100%" stop-color="#031238" />
+    </linearGradient>
+    
+    <!-- Element Gradient (Blue to Orange) -->
+    <linearGradient id="elGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3494fc" />
+      <stop offset="60%" stop-color="#e86b4a" />
+      <stop offset="100%" stop-color="#ff603a" />
+    </linearGradient>
+  </defs>
+
+  <!-- App Icon Background Squircle -->
+  <rect x="10" y="10" width="100" height="100" rx="24" fill="url(#bgGrad)" />
+
+  <!-- Center Lens Rings -->
+  <circle cx="60" cy="60" r="26" fill="none" stroke="url(#elGrad)" stroke-width="7" />
+  <circle cx="60" cy="60" r="18" fill="none" stroke="#2b68b3" stroke-width="2" />
+
+  <!-- Center Play Button -->
+  <polygon points="52,48 52,72 74,60" fill="url(#elGrad)" />
+
+  <!-- Top Right Broadcast Waves -->
+  <path d="M 74,36 A 28,28 0 0,1 84,46" fill="none" stroke="url(#elGrad)" stroke-width="4.5" stroke-linecap="round" />
+  <path d="M 81,26 A 42,42 0 0,1 96,41" fill="none" stroke="url(#elGrad)" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Bottom Right Heart -->
+  <path d="M 88,75 
+           A 4.5,4.5 0 0,0 79,75 
+           A 4.5,4.5 0 0,0 70,75 
+           C 70,82 79,89 79,91 
+           C 79,89 88,82 88,75 Z" 
+        fill="url(#elGrad)" />
+
+  <!-- Top Left Arrow -->
+  <g fill="#4a9ffc">
+    <path d="M 26,48 C 26,34 32,30 38,32" fill="none" stroke="#4a9ffc" stroke-width="3.5" stroke-linecap="round" />
+    <polygon points="36,26 46,33 34,38" />
+  </g>
+</svg>
