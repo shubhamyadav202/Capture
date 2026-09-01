@@ -247,6 +247,8 @@ const LoopCard = ({ loop }) => {
           >
             {loop.author?.username}
           </div>
+
+          
           <FollowButton
             targetUserId={loop.author?._id}
             tailwind={

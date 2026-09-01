@@ -1,14 +1,15 @@
 import React, { useEffect } from "react";
-import useParams from "react-router-dom";
-import serverUrl from "../App.jsx";
+import { useParams } from "react-router-dom";
+import { serverUrl } from "../App.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { setStoryData } from "../redux/storySlice.js";
 import StoryCard from "../components/StoryCard.jsx";
+import axios from "axios";
 
 const Story = () => {
   const { username } = useParams();
   const dispatch = useDispatch();
-  const {storyData} = useSelector(state => state.data);
+  const { storyData } = useSelector((state) => state.story);
 
   const handleStory = async () => {
     try {
@@ -16,7 +17,7 @@ const Story = () => {
         `${serverUrl}/api/story/getByUsername/${username}`,
         { withCredentials: true },
       );
-      dispatch(setStoryData(result.data));
+      dispatch(setStoryData(result.data[0]));
     } catch (error) {
       console.log(error);
     }
@@ -28,11 +29,10 @@ const Story = () => {
     }
   }, [username]);
 
-
   return (
-  <div>
-    <StoryCard story={storyData}/>
-  </div>
+    <div className="w-full h-[100vh] bg-black flex justify-center items-center">
+      <StoryCard />
+    </div>
   );
 };
 

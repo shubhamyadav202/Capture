@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const storySlice = createSlice({
   name: "post",
   initialState: {
-    storyData: [],
+    storyData: null,
     storyList: null,
     currentUserStory: null,
   },
