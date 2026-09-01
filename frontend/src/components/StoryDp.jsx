@@ -1,15 +1,45 @@
 import React from "react";
 import dp from "../assets/dp.jpg";
+import { FiPlusCircle } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const StoryDp = ({ ProfileImage, username }) => {
+const StoryDp = ({ username, profileImage, story }) => {
+  const navigate = useNavigate();
+  const {userData} = useSelector(state => state.user);
+
+  const handleClick = () => {
+    if (!story && username == "Your Story") {
+      navigate("/upload");
+    }
+    else if(story && username == "Your Story")
+    {
+      navigate(`/story/${userData.username}`)
+    }
+  };
+
   return (
-    <div className="flex flex-col w-[80px]">
-      <div className="w-[80px] h-[80px] bg-gradient-to-b from-blue-500 to-blue-950 rounded-full flex justify-center items-center">
+    <div className="flex flex-col w-[80px]" onClick={handleClick}>
+      <div
+        className={`w-[80px] h-[80px] relative ${story ? "bg-gradient-to-b from-blue-500 to-blue-950" : ""} rounded-full flex justify-center items-center`}
+        onClick={handleClick}
+      >
         <div className="w-[70px] h-[70px] border-2 border-black rounded-full cursor-pointer overflow-hidden">
-          <img src={dp} alt="" className="w-full object-cover" />
+          <img
+            src={profileImage || dp}
+            alt=""
+            className="w-full object-cover"
+          />
+          {!story && username == "Your Story" && (
+            <div>
+              <FiPlusCircle className="text-black w-[22px] h-[22px] bg-white rounded-full absolute bottom-[8px] right-[10px]" />
+            </div>
+          )}
         </div>
       </div>
-      <div className="text-[14px] text-center truncate w-full text-white">{username}</div>
+      <div className="text-[14px] text-center truncate w-full text-white">
+        {username}
+      </div>
     </div>
   );
 };

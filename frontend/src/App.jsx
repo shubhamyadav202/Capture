@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Signup from "./pages/Signup.jsx";
 import Signin from "./pages/SignIn.jsx";
@@ -12,6 +11,7 @@ import Profile from "./pages/Profile.jsx";
 import EditProfile from "./pages/EditProfile.jsx";
 import Upload from "./pages/Upload.jsx";
 import Loops from "./pages/Loops.jsx";
+import Story from "./pages/Story.jsx";
 import getAllLoops from "./hooks/getAllLoops.jsx";
 export const serverUrl = "http://localhost:8080";
 
@@ -42,6 +42,10 @@ function App() {
       <Route
         path="/getProfile/:username"
         element={userData ? <Profile /> : <Navigate to={"/signin"} />}
+      />
+      <Route
+        path="/story/:username"
+        element={userData ? <Story /> : <Navigate to={"/signin"} />}
       />
       <Route
         path="/editprofile"

@@ -10,6 +10,7 @@ import { ClipLoader } from "react-spinners";
 import { setPostData } from "../redux/postSlice.js";
 import { setStoryData } from "../redux/storySlice.js";
 import { setLoopData } from "../redux/loopSlice.js";
+import { setUserData } from "../redux/userSlice.js";
 
 const Upload = () => {
   const navigate = useNavigate();
@@ -77,8 +78,7 @@ const Upload = () => {
           withCredentials: true,
         },
       );
-
-      dispatch(setStoryData([...storyData, result.data]));
+      setUserData((prev)=>({...prev,story:result.loopData}))
       setLoading(false);
       navigate("/");
     } catch (error) {
