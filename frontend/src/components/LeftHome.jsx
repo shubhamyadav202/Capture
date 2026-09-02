@@ -7,10 +7,12 @@ import { serverUrl } from "../App.jsx";
 import { setUserData } from "../redux/userSlice";
 import axios from "axios";
 import OtherUsers from "./OtherUsers.jsx";
+import { useNavigate } from "react-router-dom";
 
 const LeftHome = () => {
   const { userData, suggestedUsers } = useSelector((state) => state.user);
 
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleLogOut = async () => {
@@ -39,6 +41,7 @@ const LeftHome = () => {
               src={userData.profileImage || dp}
               alt=""
               className="w-full object-cover"
+              onClick={() => navigate(`/getProfile/${userData.username}`)}
             />
           </div>
           <div>
@@ -59,9 +62,10 @@ const LeftHome = () => {
       </div>
       <div className="w-full flex flex-col gap-[20px] p-[20px]">
         <h1 className="text-white text-[19px]">Suggested Users</h1>
-        {suggestedUsers && suggestedUsers.slice(0,3).map((user,index)=>(
-          <OtherUsers key={index} user={user}/>
-        ))}
+        {suggestedUsers &&
+          suggestedUsers
+            .slice(0, 3)
+            .map((user, index) => <OtherUsers key={index} user={user} />)}
       </div>
     </div>
   );

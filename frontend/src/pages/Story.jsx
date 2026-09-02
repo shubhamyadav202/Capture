@@ -12,6 +12,7 @@ const Story = () => {
   const { storyData } = useSelector((state) => state.story);
 
   const handleStory = async () => {
+    dispatch(setStoryData(null)); 
     try {
       const result = await axios.get(
         `${serverUrl}/api/story/getByUsername/${username}`,
@@ -31,7 +32,7 @@ const Story = () => {
 
   return (
     <div className="w-full h-[100vh] bg-black flex justify-center items-center">
-      <StoryCard />
+      <StoryCard storyData={storyData} />
     </div>
   );
 };

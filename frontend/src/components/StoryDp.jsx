@@ -1,20 +1,34 @@
-import React from "react";
 import dp from "../assets/dp.jpg";
 import { FiPlusCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { serverUrl } from "../App.jsx";
 
 const StoryDp = ({ username, profileImage, story }) => {
   const navigate = useNavigate();
-  const {userData} = useSelector(state => state.user);
+  const { userData } = useSelector((state) => state.user);
+
+  const handleViewers = async () => {
+    try {
+      const result = await axios.get(
+        `${serverUrl}/api/story/view/${story._id}`,
+        { withCredentials: true },
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleClick = () => {
     if (!story && username == "Your Story") {
       navigate("/upload");
-    }
-    else if(story && username == "Your Story")
-    {
-      navigate(`/story/${userData.username}`)
+    } else if (story && username == "Your Story") {
+      handleViewers();
+      navigate(`/story/${userData.username}`);
+    } else {
+      handleViewers();
+      navigate(`/story/${username}`);
     }
   };
 

@@ -87,3 +87,20 @@ export const getStoryByUsername = async (req, res) => {
       .json({ message: `Story get by username Error ${error}` });
   }
 };
+
+export const getAllStories = async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.userId);
+    const followingIds = currentUser.following;
+
+    const stories = await Story.find({
+      author: { $in: followingIds },
+    })
+      .populate("viewers author")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(stories);
+  } catch (error) {
+    return res.status(500).json({ message: "All story get error" });
+  }
+};

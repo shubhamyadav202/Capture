@@ -13,6 +13,7 @@ import Upload from "./pages/Upload.jsx";
 import Loops from "./pages/Loops.jsx";
 import Story from "./pages/Story.jsx";
 import getAllLoops from "./hooks/getAllLoops.jsx";
+import getAllStories from "./hooks/getAllStories.jsx";
 export const serverUrl = "http://localhost:8080";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
   getSuggestedUsers();
   getAllPosts();
   getAllLoops();
+  getAllStories();
   const { userData } = useSelector((state) => state.user);
   return (
     <Routes>

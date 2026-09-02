@@ -8,7 +8,7 @@ import { serverUrl } from "../App.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { ClipLoader } from "react-spinners";
 import { setPostData } from "../redux/postSlice.js";
-import { setStoryData } from "../redux/storySlice.js";
+import { setCurrentUserStory, setStoryData } from "../redux/storySlice.js";
 import { setLoopData } from "../redux/loopSlice.js";
 import { setUserData } from "../redux/userSlice.js";
 
@@ -78,7 +78,7 @@ const Upload = () => {
           withCredentials: true,
         },
       );
-      setUserData((prev)=>({...prev,story:result.loopData}))
+      dispatch(setCurrentUserStory(result.data))
       setLoading(false);
       navigate("/");
     } catch (error) {

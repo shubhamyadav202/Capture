@@ -21,7 +21,7 @@ const FollowButton = ({ targetUserId, tailwind, onFollowChange }) => {
       if (onFollowChange) {
         await onFollowChange();
       }
-      
+
     } catch (error) {
       console.log(error);
     }
