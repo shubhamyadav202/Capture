@@ -4,10 +4,28 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
+import { useEffect, useState } from "react";
 
 const StoryDp = ({ username, profileImage, story }) => {
   const navigate = useNavigate();
   const { userData } = useSelector((state) => state.user);
+  const { storyData,storyList } = useSelector((state) => state.story);
+  const [viewed, setViewed] = useState(false);
+
+  useEffect(() => {
+    if (
+      story?.viewers?.some(
+        (viewer) =>
+          viewer?._id?.toString() === userData._id.toString() ||
+          viewer?.toString() == userData._id.toString(),
+      )
+    ) {
+      setViewed(true);
+    } else {
+      setViewed(false);
+    }
+    
+  }, [story, userData, storyData, storyList]);
 
   const handleViewers = async () => {
     try {
@@ -35,7 +53,7 @@ const StoryDp = ({ username, profileImage, story }) => {
   return (
     <div className="flex flex-col w-[80px]" onClick={handleClick}>
       <div
-        className={`w-[80px] h-[80px] relative ${story ? "bg-gradient-to-b from-blue-500 to-blue-950" : ""} rounded-full flex justify-center items-center`}
+        className={`w-[80px] h-[80px] relative ${!story ? null : !viewed ?"bg-gradient-to-b from-blue-500 to-blue-950" : "bg-gradient-to-b from-gray-500 to-black-800"} rounded-full flex justify-center items-center`}
         onClick={handleClick}
       >
         <div className="w-[70px] h-[70px] border-2 border-black rounded-full cursor-pointer overflow-hidden">

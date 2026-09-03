@@ -30,8 +30,6 @@ const StoryCard = ({ storyData }) => {
 
   return (
     <div className="w-full max-w-[500px] h-[100vh] border-x-2 border-gray-800 pt-[10px] relative flex flex-col justify-center">
-
-      
       <div className="flex items-center gap-[10px] absolute px-[10px] top-[30px]">
         <IoArrowBackSharp
           className="text-white cursor-pointer w-[25px] h-[25px]"
@@ -39,7 +37,7 @@ const StoryCard = ({ storyData }) => {
         />
         <div
           className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] border-2 border-black rounded-full cursor-pointer overflow-hidden"
-          // onClick={() => navigate(`/getProfile/${story.author?.username}`)}
+          onClick={() => navigate(`/getProfile/${storyData?.author?.username}`)}
         >
           <img
             src={storyData?.author?.profileImage || dp}
@@ -49,7 +47,7 @@ const StoryCard = ({ storyData }) => {
         </div>
         <div
           className="w-[120px] font-semibold truncate cursor-pointer text-white "
-          // onClick={() => navigate(`/getProfile/${story?.author?.username}`)}
+          onClick={() => navigate(`/getProfile/${storyData?.author?.username}`)}
         >
           {storyData?.author?.username}
         </div>
@@ -83,7 +81,7 @@ const StoryCard = ({ storyData }) => {
           </div>
 
           {storyData?.author?.username == userData?.username && (
-            <div className="w-full h-[70px] flex items-center gap-[20px] text-white absolute bottom-0 p-2 left-0">
+            <div className="w-full h-[70px] flex items-center gap-[20px] text-white absolute bottom-0 p-2 left-0 cursor-pointer" onClick={()=>setShowViewers(true)}>
               <div className="text-white flex items-center gap-[5px]">
                 <FaEye />
                 {storyData.viewers.length}
@@ -108,7 +106,58 @@ const StoryCard = ({ storyData }) => {
         </>
       )}
 
-      <div></div>
+      {showViewers && (
+        <>
+          <div className="w-full h-[30%] flex items-center pt-[30px]justify-center mt-[100px] py-[30px] overflow-hidden cursor-pointer" onClick={()=>setShowViewers(false)}>
+            {storyData?.mediaType == "image" && (
+              <div className="h-full flex items-center justify-center">
+                <img
+                  src={storyData?.media}
+                  alt=""
+                  className="h-[80%] rounded-2xl object-cover"
+                />
+              </div>
+            )}
+
+            {storyData?.mediaType == "video" && (
+              <div className="h-full flex flex-col items-center justify-center">
+                <VideoPlayer media={storyData?.media} />
+              </div>
+            )}
+          </div>
+
+          <div className="w-full h-[70%] border-t-2 border-t-gray-800 p-[20px]">
+            <div className="text-white flex items-center gap-[10px]">
+              <FaEye />
+              <span>{storyData?.viewers?.length}</span>
+              <span>Viewers</span>
+            </div>
+
+            <div className="w-full max-h-full flex flex-col gap-[10px] overflow-auto pt-[20px]">
+              {storyData?.viewers?.map((viewer, index) => (
+                <div className="w-full flex items-center gap-[20px]">
+                  <div
+                    className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] border-2 border-black rounded-full cursor-pointer overflow-hidden"
+                    onClick={() => navigate(`/getProfile/${viewer?.username}`)}
+                  >
+                    <img
+                      src={viewer?.profileImage || dp}
+                      alt=""
+                      className="w-full object-cover"
+                    />
+                  </div>
+                  <div
+                    className="w-[120px] font-semibold truncate cursor-pointer text-white "
+                    onClick={() => navigate(`/getProfile/${viewer?.username}`)}
+                  >
+                    {viewer?.username}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
