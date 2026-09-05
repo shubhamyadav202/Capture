@@ -132,7 +132,7 @@ const Profile = () => {
                     className="w-full object-cover"
                   />
                 </div>
-              ))}
+              ))} 
             </div>
             <div className="text-white text-[22px] md:text-[30px] font-semibold">
               {profileData?.following.length}

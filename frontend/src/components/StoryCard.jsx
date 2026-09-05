@@ -37,7 +37,7 @@ const StoryCard = ({ storyData }) => {
         />
         <div
           className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] border-2 border-black rounded-full cursor-pointer overflow-hidden"
-          onClick={() => navigate(`/getProfile/${storyData?.author?.username}`)}
+        // onClick={() => navigate(`/getProfile/${story.author?.username}`)}
         >
           <img
             src={storyData?.author?.profileImage || dp}
@@ -47,7 +47,7 @@ const StoryCard = ({ storyData }) => {
         </div>
         <div
           className="w-[120px] font-semibold truncate cursor-pointer text-white "
-          onClick={() => navigate(`/getProfile/${storyData?.author?.username}`)}
+        // onClick={() => navigate(`/getProfile/${story?.author?.username}`)}
         >
           {storyData?.author?.username}
         </div>
@@ -81,7 +81,7 @@ const StoryCard = ({ storyData }) => {
           </div>
 
           {storyData?.author?.username == userData?.username && (
-            <div className="w-full h-[70px] flex items-center gap-[20px] text-white absolute bottom-0 p-2 left-0 cursor-pointer" onClick={()=>setShowViewers(true)}>
+            <div className="w-full h-[70px] flex items-center gap-[20px] text-white absolute bottom-0 p-2 left-0">
               <div className="text-white flex items-center gap-[5px]">
                 <FaEye />
                 {storyData.viewers.length}
@@ -108,7 +108,7 @@ const StoryCard = ({ storyData }) => {
 
       {showViewers && (
         <>
-          <div className="w-full h-[30%] flex items-center pt-[30px]justify-center mt-[100px] py-[30px] overflow-hidden cursor-pointer" onClick={()=>setShowViewers(false)}>
+          <div className="w-full h-[30%] flex items-center pt-[30px]justify-center mt-[100px] py-[30px] overflow-hidden">
             {storyData?.mediaType == "image" && (
               <div className="h-full flex items-center justify-center">
                 <img
@@ -132,32 +132,11 @@ const StoryCard = ({ storyData }) => {
               <span>{storyData?.viewers?.length}</span>
               <span>Viewers</span>
             </div>
-
-            <div className="w-full max-h-full flex flex-col gap-[10px] overflow-auto pt-[20px]">
-              {storyData?.viewers?.map((viewer, index) => (
-                <div className="w-full flex items-center gap-[20px]">
-                  <div
-                    className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] border-2 border-black rounded-full cursor-pointer overflow-hidden"
-                    onClick={() => navigate(`/getProfile/${viewer?.username}`)}
-                  >
-                    <img
-                      src={viewer?.profileImage || dp}
-                      alt=""
-                      className="w-full object-cover"
-                    />
-                  </div>
-                  <div
-                    className="w-[120px] font-semibold truncate cursor-pointer text-white "
-                    onClick={() => navigate(`/getProfile/${viewer?.username}`)}
-                  >
-                    {viewer?.username}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </>
       )}
+
+
     </div>
   );
 };

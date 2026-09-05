@@ -14,6 +14,8 @@ import Loops from "./pages/Loops.jsx";
 import Story from "./pages/Story.jsx";
 import getAllLoops from "./hooks/getAllLoops.jsx";
 import getAllStories from "./hooks/getAllStories.jsx";
+import Messages from "./pages/Messages.jsx";
+import MessageArea from "./pages/MessageArea.jsx";
 export const serverUrl = "http://localhost:8080";
 
 function App() {
@@ -54,12 +56,20 @@ function App() {
         element={userData ? <EditProfile /> : <Navigate to={"/signin"} />}
       />
       <Route
+        path="/messages"
+        element={userData ? <Messages /> : <Navigate to={"/signin"} />}
+      />
+      <Route
         path="/upload"
         element={userData ? <Upload /> : <Navigate to={"/signin"} />}
       />
       <Route
         path="/loops"
         element={userData ? <Loops /> : <Navigate to={"/signin"} />}
+      />
+      <Route
+        path="/messageArea"
+        element={userData ? <MessageArea /> : <Navigate to={"/signin"} />}
       />
     </Routes>
   );
