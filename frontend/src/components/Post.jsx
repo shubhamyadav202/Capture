@@ -13,12 +13,14 @@ import { setUserData } from "../redux/userSlice.js";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
 import FollowButton from "./FollowButton.jsx";
+import { useNavigate } from "react-router-dom";
 
 const Post = ({ post }) => {
   const { userData } = useSelector((state) => state.user);
   const { postData } = useSelector((state) => state.post);
   const [showComment, setShowComment] = useState(false);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleLike = async () => {
@@ -81,16 +83,20 @@ const Post = ({ post }) => {
               src={post.author?.profileImage || dp}
               alt=""
               className="w-full object-cover"
+              onClick={() => navigate(`/getProfile/${post.author.username}`)}
             />
           </div>
-          <div className="w-[150px] font-semibold truncate">
+          <div
+            className="w-[150px] font-semibold truncate"
+            onClick={() => navigate(`/getProfile/${post.author.username}`)}
+          >
             {post.author.username}
           </div>
         </div>
         {userData._id != post.author._id && (
           <FollowButton
             tailwind={
-              "px-[10px] w-[60px] md:w-[100px] py-[5px] h-[30px] md:h-[40px] bg-black text-white rounded-2xl text-[14px] md:text-[16px] cursor-pointer"
+              "px-[10px] min-w-[60px] md:min-w-[100px] py-[5px] h-[30px] md:h-[40px] bg-black text-white rounded-2xl text-[14px] md:text-[16px] cursor-pointer"
             }
             targetUserId={post.author._id}
           />

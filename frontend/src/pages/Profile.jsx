@@ -10,6 +10,7 @@ import { RxButton } from "react-icons/rx";
 import Nav from "../components/Nav.jsx";
 import FollowButton from "../components/FollowButton.jsx";
 import Post from "../components/Post.jsx";
+import { setSelectedUser } from "../redux/messageSlice.js";
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -163,7 +164,10 @@ const Profile = () => {
               }
               onFollowChange={handleProfile}
             />
-            <button className="px-[10px] min-w-[150px] py-[5px] h-[40px] bg-[white] cursor-pointer rounded-2xl">
+            <button className="px-[10px] min-w-[150px] py-[5px] h-[40px] bg-[white] cursor-pointer rounded-2xl" onClick={()=>{
+              dispatch(setSelectedUser(profileData));
+              navigate("/messageArea");
+            }}>
               Message
             </button>
           </>

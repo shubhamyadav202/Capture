@@ -3,7 +3,7 @@ import Signup from "./pages/Signup.jsx";
 import Signin from "./pages/SignIn.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Home from "./pages/Home.jsx";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import getCurrentUser from "./hooks/getCurrentUser.jsx";
 import getSuggestedUsers from "./hooks/getSuggestedUsers.jsx";
 import getAllPosts from "./hooks/getAllPosts.jsx";
@@ -16,6 +16,9 @@ import getAllLoops from "./hooks/getAllLoops.jsx";
 import getAllStories from "./hooks/getAllStories.jsx";
 import Messages from "./pages/Messages.jsx";
 import MessageArea from "./pages/MessageArea.jsx";
+import { useEffect } from "react";
+import { io } from "socket.io-client";
+import { setOnlineUsers, setSocket } from "./redux/socketSlice.js";
 export const serverUrl = "http://localhost:8080";
 
 function App() {
@@ -25,6 +28,31 @@ function App() {
   getAllLoops();
   getAllStories();
   const { userData } = useSelector((state) => state.user);
+  const { socket } = useSelector((state) => state.socket);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (userData) {
+      const socketIo = io(serverUrl, {
+        query: {
+          userId: userData._id,
+        },
+      });
+      dispatch(setSocket(socketIo));
+
+      socketIo.on("getOnlineUsers", (users) => {
+        dispatch(setOnlineUsers(users));
+      });
+
+      return () => socketIo.close();
+    } else {
+      if (socket) {
+        socket.close();
+        dispatch(setSocket(null));
+      }
+    }
+  }, [userData]);
+
   return (
     <Routes>
       <Route

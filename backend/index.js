@@ -8,8 +8,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import postRouter from "./routes/post.routes.js";
 import storyRouter from "./routes/story.routes.js";
+import messageRouter from "./routes/message.routes.js";
+import { app, server } from "./socket.js";
 dotenv.config();
-const app = express();
+
 const port = process.env.PORT || 5000;
 
 app.use(express.json());
@@ -26,8 +28,9 @@ app.use("/api/user", userRouter);
 app.use("/api/post", postRouter);
 app.use("/api/loop", loopRouter);
 app.use("/api/story", storyRouter);
+app.use("/api/message", messageRouter);
 
-app.listen(port, () => {
+server.listen(port, () => {
   connectDb();
   console.log(`Server is Listening on port : ${port}`);
 });
