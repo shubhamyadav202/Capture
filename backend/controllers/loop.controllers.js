@@ -1,6 +1,7 @@
 import Loop from "../models/loop.model.js";
 import User from "../models/user.model.js";
 import uploadOnCloudinary from "../config/cloudinary.js";
+import Notification from "../models/notification.model.js";
 import { io } from "../socket.js";
 
 export const uploadLoop = async (req, res) => {

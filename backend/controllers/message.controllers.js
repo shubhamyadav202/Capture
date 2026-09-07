@@ -1,7 +1,7 @@
 import uploadOnCloudinary from "../config/cloudinary.js";
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/messages.model.js";
-import { io } from "../socket.js";
+import { io, getSocketId } from "../socket.js";
 
 export const sendMessage = async (req, res) => {
   try {
@@ -45,6 +45,7 @@ export const sendMessage = async (req, res) => {
 
     return res.status(200).json(newMessage);
   } catch (error) {
+    import("fs").then(fs => fs.writeFileSync("message_error.log", error.stack || error.toString()));
     return res.status(500).json({ message: `send Messsage error ${error}` });
   }
 };
