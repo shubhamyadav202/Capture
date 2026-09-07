@@ -16,7 +16,7 @@ const Nav = () => {
       <div onClick={() => navigate("/")} className="cursor-pointer">
         <GoHomeFill className="text-white w-[25px] h-[25px]" />
       </div>
-      <div className="cursor-pointer">
+      <div className="cursor-pointer" onClick={()=>navigate("/search")}>
         <FiSearch className="text-white w-[25px] h-[25px]" />
       </div>
       <div className="cursor-pointer" onClick={()=> navigate("/upload")}>

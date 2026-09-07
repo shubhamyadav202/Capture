@@ -4,7 +4,9 @@ import uploadOnCloudinary from "../config/cloudinary.js";
 export const getCurrentUser = async (req, res) => {
   try {
     const userId = req.userId;
-    const user = await User.findById(userId).populate("posts loops posts.author posts.comments story");
+    const user = await User.findById(userId).populate(
+      "posts loops posts.author posts.comments story following",
+    );
 
     if (!user) {
       return res.status(400).json({ message: "User not Found" });
@@ -74,7 +76,9 @@ export const getProfile = async (req, res) => {
   try {
     const username = req.params.username;
 
-    const user = await User.findOne({ username }).select("-password").populate("posts loops followers following");
+    const user = await User.findOne({ username })
+      .select("-password")
+      .populate("posts loops followers following");
 
     if (!user) {
       return res.status(400).json({ message: "User not found" });
@@ -124,6 +128,28 @@ export const follow = async (req, res) => {
       currentUser.following.push(targetUserId);
       targetUser.followers.push(currentUserId);
 
+      if (currentUser._id != targetUser._id) {
+        const notification = await Notification.create({
+          sender: currentUser._id,
+          receiver: targetUser._id,
+          type: "follow",
+          message: "Started following you",
+        });
+
+        const populatedNotification = await Notification.findById(
+          notification._id,
+        ).populate("sender receiver loop");
+
+        const receiverSocketId = getSocketId(loop.author._id);
+
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit(
+            "newNotification",
+            populatedNotification,
+          );
+        }
+      }
+
       await currentUser.save();
       await targetUser.save();
 
@@ -134,5 +160,35 @@ export const follow = async (req, res) => {
     }
   } catch (error) {
     return res.status(500).json({ message: `Follow error ${error}` });
+  }
+};
+
+export const followingList = async (req, res) => {
+  try {
+    const result = await User.findById(req.userId);
+    return res.status(200).json(result?.following);
+  } catch (error) {
+    return res.status(500).json({ message: `Following error ${error}` });
+  }
+};
+
+export const search = async (req, res) => {
+  try {
+    const keyword = req.query.keyword;
+
+    if (!keyword) {
+      return res.status(400).json({ message: "keyword is required" });
+    }
+
+    const users = await User.find({
+      $or: [
+        { username: { $regex: keyword, $options: "i" } },
+        { name: { $regex: keyword, $options: "i" } },
+      ],
+    }).select("-password");
+
+    return res.status(200).json(users);
+  } catch (error) {
+    return res.status(500).json({ message: `Search error ${error}` });
   }
 };

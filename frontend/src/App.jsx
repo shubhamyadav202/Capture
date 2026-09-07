@@ -19,6 +19,9 @@ import MessageArea from "./pages/MessageArea.jsx";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
 import { setOnlineUsers, setSocket } from "./redux/socketSlice.js";
+import getFollowingList from "./hooks/getFollowingList.jsx";
+import getPrevChatUsers from "./hooks/getPrevChatUsers.jsx";
+import Search from "./pages/Search.jsx";
 export const serverUrl = "http://localhost:8080";
 
 function App() {
@@ -27,6 +30,8 @@ function App() {
   getAllPosts();
   getAllLoops();
   getAllStories();
+  getFollowingList();
+  getPrevChatUsers();
   const { userData } = useSelector((state) => state.user);
   const { socket } = useSelector((state) => state.socket);
   const dispatch = useDispatch();
@@ -98,6 +103,10 @@ function App() {
       <Route
         path="/messageArea"
         element={userData ? <MessageArea /> : <Navigate to={"/signin"} />}
+      />
+      <Route
+        path="/search"
+        element={userData ? <Search /> : <Navigate to={"/signin"} />}
       />
     </Routes>
   );

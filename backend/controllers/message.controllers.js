@@ -1,6 +1,7 @@
 import uploadOnCloudinary from "../config/cloudinary.js";
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/messages.model.js";
+import { io } from "../socket.js";
 
 export const sendMessage = async (req, res) => {
   try {
@@ -36,6 +37,12 @@ export const sendMessage = async (req, res) => {
       await conversation.save();
     }
 
+    const receiverSocketId = getSocketId(receiverId);
+    
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
+
     return res.status(200).json(newMessage);
   } catch (error) {
     return res.status(500).json({ message: `send Messsage error ${error}` });
@@ -63,23 +70,24 @@ export const getPrevUserChats = async (req, res) => {
     const conversations = await Conversation.find({
       participants: currentUserId,
     })
-    .populate(participants)
-    .sort({ updatedAt: -1 });
-    
-      const userMap={}
-      conversations.forEach(conv =>{
-        conv.participants.forEach(user =>{
-            if(user._id != currentUserId)
-            {
-              userMap(user._id) = user;
-            }
-          })
-      })
+      .populate("participants")
+      .sort({ updatedAt: -1 });
 
-      const previousUsers = Object.values(userMap);
+    const userMap = {};
+    conversations.forEach((conv) => {
+      conv.participants.forEach((user) => {
+        if (user._id != currentUserId) {
+          userMap[user._id] = user;
+        }
+      });
+    });
 
-      return res.status(200).json(previousUsers)
-    } catch (error) {
-    return res.status(500).json({ message: `get Previous User Chat error ${error}` });
+    const previousUsers = Object.values(userMap);
+
+    return res.status(200).json(previousUsers);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: `get Previous User Chat error ${error}` });
   }
 };

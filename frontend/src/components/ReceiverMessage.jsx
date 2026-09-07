@@ -1,11 +1,22 @@
-import React from 'react';
+import React from "react";
+import { useEffect } from "react";
+import { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-const ReceiverMessage = ({message}) => {
-    const { userData } = useSelector((state) => state.user);
-    const { selectedUser } = useSelector((state) => state.message);
+const ReceiverMessage = ({ message }) => {
+  const { userData } = useSelector((state) => state.user);
+  const { selectedUser, messages } = useSelector((state) => state.message);
+  const scroll = useRef();
+
+    useEffect(() => {
+      scroll.current.scrollIntoView({ behavior: "smooth" });
+    }, [messages.message,messages.image]);
+
   return (
-    <div className="w-fit max-w-[60%] bg-[#1a1f1f] rounded-t-2xl rounded-br-2xl rounded-bl-0 px-[10px] py-[10px] relative left-0 flex flex-col gap-[10px]">
+    <div
+      ref={scroll}
+      className="w-fit max-w-[60%] bg-[#1a1f1f] rounded-t-2xl rounded-br-2xl rounded-bl-0 px-[10px] py-[10px] relative left-0 flex flex-col gap-[10px]"
+    >
       {message.image && (
         <img
           src={message.image}
@@ -27,8 +38,8 @@ const ReceiverMessage = ({message}) => {
           className="w-full object-cover"
         />
       </div>
-    </div>  
+    </div>
   );
-}
+};
 
 export default ReceiverMessage;

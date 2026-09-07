@@ -1,6 +1,8 @@
 import uploadOnCloudinary from "../config/cloudinary.js";
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
+import Notification from "../models/notification.model.js";
+import { getSocketId, io } from "../socket.js";
 
 export const uploadPost = async (req, res) => {
   try {
@@ -67,10 +69,37 @@ export const like = async (req, res) => {
       );
     } else {
       post.likes.push(req.userId);
+      if (post.author._id != req.userId) {
+        const notification = await Notification.create({
+          sender: req.userId,
+          receiver: post.author._id,
+          type: "like",
+          post : post._id,
+          message: "Liked Your Post",
+        });
+
+        const populatedNotification = await Notification.findById(
+          notification._id,
+        ).populate("sender receiver post");
+
+        const receiverSocketId = getSocketId(post.author._id);
+
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit(
+            "newNotification",
+            populatedNotification,
+          );
+        }
+      }
     }
 
     await post.save();
     await post.populate("author", "name username profileImage");
+
+    io.emit("likedPost", {
+      postId: post._id,
+      likes: post.likes,
+    });
 
     return res.status(200).json(post);
   } catch (error) {
@@ -94,10 +123,36 @@ export const comment = async (req, res) => {
       message,
     });
 
+    if (post.author._id != req.userId) {
+      const notification = await Notification.create({
+        sender: req.userId,
+        receiver: post.author._id,
+        type: "comment",
+        post : post._id,
+        message: "Commented on your post",
+      });
+
+      const populatedNotification = await Notification.findById(
+        notification._id,
+      ).populate("sender receiver post");
+
+      const receiverSocketId = getSocketId(post.author._id);
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newNotification", populatedNotification);
+      }
+    }
+
     await post.save();
 
     await post.populate("author", "name username profileImage");
     await post.populate("comments.author");
+
+    io.emit("commentedPost", {
+      postId: post._id,
+      comments: post.comments,
+    });
+
     return res.status(200).json(post);
   } catch (error) {
     return res.status(500).json({ message: `Comment Post error : ${error}` });

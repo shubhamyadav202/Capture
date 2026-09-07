@@ -14,6 +14,7 @@ import axios from "axios";
 const MessageArea = () => {
   const { selectedUser, messages } = useSelector((state) => state.message);
   const { userData } = useSelector((state) => state.user);
+  const { socket } = useSelector((state) => state.socket);
   const [input, setInput] = useState("");
   const [frontendImage, setFrontendImage] = useState(null);
   const [backendImage, setBackendImage] = useState(null);
@@ -68,6 +69,14 @@ const MessageArea = () => {
   useEffect(() => {
     getAllMessages();
   }, []);
+
+  useEffect(() => {
+    socket?.on("newMessage", (mess) => {
+      dispatch(setMessages([...messages, mess]));
+    });
+
+    return () => socket?.off("newMessage")
+  }, [messages, setMessages]);
 
   return (
     <div className="bg-black relative w-full h-[100vh]">

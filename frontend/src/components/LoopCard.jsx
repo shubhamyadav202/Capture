@@ -17,6 +17,7 @@ const LoopCard = ({ loop }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const videoRef = useRef();
+  const { socket } = useSelector((state) => state.socket);
   const { userData } = useSelector((state) => state.user);
   const { loopData } = useSelector((state) => state.loop);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -130,6 +131,29 @@ const LoopCard = ({ loop }) => {
       }
     };
   }, []);
+
+  useEffect(() => {
+      socket?.on("likedLoop", (updatedData) => {
+        const updatedLoops = loopData.map((p) =>
+          p._id == updatedData.loopId ? { ...p, likes: updatedData.likes } : p,
+        );
+        dispatch(setLoopData(updatedLoops));
+      });
+  
+      socket?.on("commentedLoop", (updatedData) => {
+        const updatedLoops = loopData.map((p) =>
+          p._id == updatedData.loopId
+            ? { ...p, comments: updatedData.comments }
+            : p, 
+        );
+        dispatch(setLoopData(updatedLoops));
+      });
+  
+      return () => {
+        socket?.off("likedLoop");
+        socket?.off("commentedLoop");
+      };
+    }, [socket, loopData, dispatch]);
 
   return (
     <div className="w-full lg:w-[480px] h-[100vh] overflow-hidden flex items-center justify-center border-l-2 border-r-2 border-gray-800 relative">

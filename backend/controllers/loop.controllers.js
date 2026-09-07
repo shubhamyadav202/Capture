@@ -1,6 +1,7 @@
 import Loop from "../models/loop.model.js";
 import User from "../models/user.model.js";
 import uploadOnCloudinary from "../config/cloudinary.js";
+import { io } from "../socket.js";
 
 export const uploadLoop = async (req, res) => {
   try {
@@ -54,10 +55,38 @@ export const like = async (req, res) => {
       );
     } else {
       loop.likes.push(req.userId);
+
+      if (loop.author._id != req.userId) {
+        const notification = await Notification.create({
+          sender: req.userId,
+          receiver: loop.author._id,
+          type: "like",
+          loop : loop._id,
+          message: "Liked your loop",
+        });
+
+        const populatedNotification = await Notification.findById(
+          notification._id,
+        ).populate("sender receiver loop");
+
+        const receiverSocketId = getSocketId(loop.author._id);
+
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit(
+            "newNotification",
+            populatedNotification,
+          );
+        }
+      }
     }
 
     await loop.save();
     await loop.populate("author", "name username profileImage");
+
+    io.emit("likedLoop", {
+      loopId: loop._id,
+      likes: loop.likes,
+    });
 
     return res.status(200).json(loop);
   } catch (error) {
@@ -81,10 +110,36 @@ export const comment = async (req, res) => {
       message,
     });
 
+    if (loop.author._id != req.userId) {
+      const notification = await Notification.create({
+        sender: req.userId,
+        receiver: loop.author._id,
+        type: "comment",
+        loop: loop._id,
+        message: "Commented on your loop",
+      });
+
+      const populatedNotification = await Notification.findById(
+        notification._id,
+      ).populate("sender receiver loop");
+
+      const receiverSocketId = getSocketId(loop.author._id);
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newNotification", populatedNotification);
+      }
+    }
+
     await loop.save();
 
     await loop.populate("author", "name username profileImage");
     await loop.populate("comments.author");
+
+    io.emit("commentedLoop", {
+      loopId: loop._id,
+      comments: loop.comments,
+    });
+
     return res.status(200).json(loop);
   } catch (error) {
     return res.status(500).json({ message: `Comment Loop error : ${error}` });

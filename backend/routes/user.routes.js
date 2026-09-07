@@ -3,8 +3,10 @@ import isAuth from "../middlewares/isAuth.js";
 import {
   editProfile,
   follow,
+  followingList,
   getCurrentUser,
   getProfile,
+  search,
   suggestedUsers,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.js";
@@ -19,6 +21,9 @@ userRouter.get("/getProfile/:username", isAuth, getProfile);
 
 userRouter.get("/follow/:targetUserId", isAuth, follow);
 
+userRouter.get("/search", isAuth, search);
+
+userRouter.get("/followingList", isAuth, followingList);
 
 userRouter.post(
   "/editProfile",
