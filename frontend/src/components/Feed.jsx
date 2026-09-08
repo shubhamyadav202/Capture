@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 const Feed = () => {
   const { postData } = useSelector((state) => state.post);
-  const { userData } = useSelector((state) => state.user);
+  const { userData,notificationData } = useSelector((state) => state.user);
   const { storyList, currentUserStory } = useSelector((state) => state.story);
   const navigate = useNavigate();
 
@@ -18,8 +18,17 @@ const Feed = () => {
       <div className="w-full h-[100px] flex items-center justify-between p-[20px] lg:hidden">
         <img src={favicon} alt="" className="w-[60px]" />
         <div className="flex items-center gap-[10px]">
-          <FaRegHeart className="text-[white] cursor-pointer w-[25px] h-[25px]" />
-          <BiMessageRoundedDots className="text-[white] cursor-pointer w-[25px] h-[25px]" onClick={()=>navigate("/messages")}/>
+          <div className="relative z-[100] cursor-pointer" onClick={()=>navigate("/notifications")}>
+            <FaRegHeart className="text-[white] w-[25px] h-[25px]" />
+            {notificationData?.length > 0 &&
+              notificationData.some((noti) => noti.isRead === false) && (
+                <div className="w-[10px] h-[10px] bg-red-500 rounded-full absolute top-0 right-[-5px]"></div>
+              )}
+          </div>
+          <BiMessageRoundedDots
+            className="text-[white] cursor-pointer w-[25px] h-[25px]"
+            onClick={() => navigate("/messages")}
+          />
         </div>
       </div>
 
