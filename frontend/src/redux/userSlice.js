@@ -29,9 +29,6 @@ const userSlice = createSlice({
     setNotificationData: (state, action) => {
       state.notificationData = action.payload;
     },
-    addNotification: (state, action) => {
-      state.notificationData = [action.payload, ...(state.notificationData || [])];
-    },
     toggleFollow: (state, action) => {
       const targetUserId = action.payload;
       if (state.following.includes(targetUserId)) {
@@ -51,6 +48,5 @@ export const {
   setFollowing,
   setSearchData,
   setNotificationData,
-  addNotification,
 } = userSlice.actions;
 export default userSlice.reducer;

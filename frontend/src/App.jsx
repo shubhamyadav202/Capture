@@ -24,7 +24,6 @@ import getPrevChatUsers from "./hooks/getPrevChatUsers.jsx";
 import Search from "./pages/Search.jsx";
 import Notifications from "./components/Notifications.jsx";
 import getAllNotifications from "./hooks/getAllNotifications.jsx";
-import { addNotification, setNotificationData } from "./redux/userSlice.js";
 export const serverUrl = "http://localhost:8080";
 
 function App() {
@@ -36,7 +35,6 @@ function App() {
   getFollowingList();
   getPrevChatUsers();
   getAllNotifications();
-
   const { userData, notificationData } = useSelector((state) => state.user);
   const { socket } = useSelector((state) => state.socket);
   const dispatch = useDispatch();
@@ -54,10 +52,6 @@ function App() {
         dispatch(setOnlineUsers(users));
       });
 
-      socketIo.on("newNotification", (notification) => {
-        dispatch(addNotification(notification));
-      });
-
       return () => socketIo.close();
     } else {
       if (socket) {
@@ -68,8 +62,8 @@ function App() {
   }, [userData]);
 
   socket?.on("newNotification", (noti) => {
-    dispatch(setNotificationData([...notificationData, noti]));
-  });
+    dispatch(setNotificationData([...notificationData, noti]))
+  })
 
   return (
     <Routes>

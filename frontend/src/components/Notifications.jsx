@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { IoArrowBackSharp } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import NotificationCard from "./NotificationCard";
-import { serverUrl } from "../App";
+import { serverUrl } from "../App.jsx";
 import axios from "axios";
-import { setNotificationData } from "../redux/userSlice";
+import { setNotificationData } from "../redux/userSlice.js";
 
 const Notifications = () => {
   const navigate = useNavigate();

@@ -12,6 +12,8 @@ import { setLoopData } from "../redux/loopSlice.js";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
 import { IoSend } from "react-icons/io5";
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import { ClipLoader } from "react-spinners";
 
 const LoopCard = ({ loop }) => {
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ const LoopCard = ({ loop }) => {
   const [isMute, setIsMute] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showHeart, setShowHeart] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [message, setMessage] = useState("");
   const commentRef = useRef();
@@ -59,6 +62,23 @@ const LoopCard = ({ loop }) => {
       dispatch(setLoopData(updatedLoops));
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+    try {
+      setIsDeleting(true);
+      await axios.delete(`${serverUrl}/api/loop/delete/${loop._id}`, {
+        withCredentials: true,
+      });
+
+      const updatedLoops = loopData.filter((l) => l._id !== loop._id);
+      dispatch(setLoopData(updatedLoops));
+    } catch (error) {
+      console.log("Delete loop error:", error.response?.data || error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -133,27 +153,27 @@ const LoopCard = ({ loop }) => {
   }, []);
 
   useEffect(() => {
-      socket?.on("likedLoop", (updatedData) => {
-        const updatedLoops = loopData.map((p) =>
-          p._id == updatedData.loopId ? { ...p, likes: updatedData.likes } : p,
-        );
-        dispatch(setLoopData(updatedLoops));
-      });
-  
-      socket?.on("commentedLoop", (updatedData) => {
-        const updatedLoops = loopData.map((p) =>
-          p._id == updatedData.loopId
-            ? { ...p, comments: updatedData.comments }
-            : p, 
-        );
-        dispatch(setLoopData(updatedLoops));
-      });
-  
-      return () => {
-        socket?.off("likedLoop");
-        socket?.off("commentedLoop");
-      };
-    }, [socket, loopData, dispatch]);
+    socket?.on("likedLoop", (updatedData) => {
+      const updatedLoops = loopData.map((p) =>
+        p._id == updatedData.loopId ? { ...p, likes: updatedData.likes } : p,
+      );
+      dispatch(setLoopData(updatedLoops));
+    });
+
+    socket?.on("commentedLoop", (updatedData) => {
+      const updatedLoops = loopData.map((p) =>
+        p._id == updatedData.loopId
+          ? { ...p, comments: updatedData.comments }
+          : p,
+      );
+      dispatch(setLoopData(updatedLoops));
+    });
+
+    return () => {
+      socket?.off("likedLoop");
+      socket?.off("commentedLoop");
+    };
+  }, [socket, loopData, dispatch]);
 
   return (
     <div className="w-full lg:w-[480px] h-[100vh] overflow-hidden flex items-center justify-center border-l-2 border-r-2 border-gray-800 relative">
@@ -267,12 +287,12 @@ const LoopCard = ({ loop }) => {
           </div>
           <div
             className="w-[120px] font-semibold truncate cursor-pointer text-white "
-            onClick={() => navigate(`/getProfile/${loop.author?.username}`)}
+            onClick={() => navigate(`/getProfile/${loop?.author?.username}`)}
           >
             {loop.author?.username}
           </div>
 
-          
+
           <FollowButton
             targetUserId={loop.author?._id}
             tailwind={
@@ -300,7 +320,22 @@ const LoopCard = ({ loop }) => {
               <MdOutlineComment className="w-[25px] cursor-pointer h-[25px]" />
             </div>
             <div>{loop.comments.length}</div>
+            <div className="mt-[10px]">
+              {(!loop?.author ||
+                !loop?.author?.username ||
+                loop?.author?._id == userData?._id ||
+                loop?.author == userData?._id) &&
+                (isDeleting ? (
+                  <ClipLoader size={20} color="#ef4444" />
+                ) : (
+                  <RiDeleteBin5Fill
+                    className="w-[25px] cursor-pointer h-[25px] hover:text-red-500 transition-all"
+                    onClick={handleDelete}
+                  />
+                ))}
+            </div>
           </div>
+
         </div>
       </div>
     </div>

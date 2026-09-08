@@ -9,21 +9,63 @@ import { FaRegBookmark } from "react-icons/fa6";
 import { FaBookmark } from "react-icons/fa6";
 import { IoSend } from "react-icons/io5";
 import { setPostData } from "../redux/postSlice.js";
-import { setUserData } from "../redux/userSlice.js";
+import { setProfileData, setUserData } from "../redux/userSlice.js";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
 import FollowButton from "./FollowButton.jsx";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { RiDeleteBin5Fill } from "react-icons/ri";
+import { ClipLoader } from "react-spinners";
 
 const Post = ({ post }) => {
-  const { userData } = useSelector((state) => state.user);
+  const { userData, profileData } = useSelector((state) => state.user);
   const { postData } = useSelector((state) => state.post);
   const { socket } = useSelector((state) => state.socket);
   const [showComment, setShowComment] = useState(false);
   const [message, setMessage] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+    try {
+      setIsDeleting(true);
+      await axios.delete(`${serverUrl}/api/post/delete/${post._id}`, {
+        withCredentials: true,
+      });
+
+      const updatedPosts = postData.filter((p) => p._id !== post._id);
+      dispatch(setPostData(updatedPosts));
+
+      if (profileData && profileData._id === userData?._id) {
+        dispatch(
+          setProfileData({
+            ...profileData,
+            posts: profileData.posts?.filter(
+              (p) => (p?._id || p)?.toString() !== post._id?.toString(),
+            ),
+          }),
+        );
+      }
+
+      if (userData?.posts) {
+        dispatch(
+          setUserData({
+            ...userData,
+            posts: userData.posts?.filter(
+              (p) => (p?._id || p)?.toString() !== post._id?.toString(),
+            ),
+          }),
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -93,9 +135,15 @@ const Post = ({ post }) => {
       dispatch(setPostData(updatedPosts));
     });
 
+    socket?.on("deletedPost", (deletedData) => {
+      const updatedPosts = postData.filter((p) => p._id !== deletedData.postId);
+      dispatch(setPostData(updatedPosts));
+    });
+
     return () => {
       socket?.off("likedPost");
       socket?.off("commentedPost");
+      socket?.off("deletedPost");
     };
   }, [socket, postData, dispatch]);
   return (
@@ -170,13 +218,26 @@ const Post = ({ post }) => {
             <span>{post.comments.length}</span>
           </div>
         </div>
-        <div onClick={handleSaved}>
-          {!userData.saved.includes(post?._id) && (
-            <FaRegBookmark className="w-[25px] cursor-pointer h-[25px]" />
-          )}
-          {userData.saved.includes(post?._id) && (
-            <FaBookmark className="w-[25px] cursor-pointer h-[25px]" />
-          )}
+
+        <div className="flex items-center gap-[15px]">
+          {(post?.author?._id == userData?._id ||
+            post?.author == userData?._id) &&
+            (isDeleting ? (
+              <ClipLoader size={20} color="#ef4444" />
+            ) : (
+              <RiDeleteBin5Fill
+                className="w-[25px] cursor-pointer h-[25px] hover:text-red-500 transition-all"
+                onClick={handleDelete}
+              />
+            ))}
+          <div onClick={handleSaved}>
+            {!userData.saved.includes(post?._id) && (
+              <FaRegBookmark className="w-[25px] cursor-pointer h-[25px]" />
+            )}
+            {userData.saved.includes(post?._id) && (
+              <FaBookmark className="w-[25px] cursor-pointer h-[25px]" />
+            )}
+          </div>
         </div>
       </div>
 

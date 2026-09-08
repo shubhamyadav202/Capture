@@ -7,7 +7,7 @@ import { setCurrentUserStory } from "../redux/storySlice";
 
 function getFollowingList() {
   const dispatch = useDispatch();
-  const { storyData } = useSelector((state) => state.story);
+  const { userData } = useSelector((state) => state.user);
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -20,7 +20,7 @@ function getFollowingList() {
       }
     };
     fetchUser();
-  }, [storyData]);
+  }, [userData]);
 }
 
 export default getFollowingList;

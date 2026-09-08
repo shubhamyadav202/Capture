@@ -40,7 +40,7 @@ const StoryDp = ({ username, profileImage, story }) => {
 
   const handleClick = () => {
     if (!story && username == "Your Story") {
-      navigate("/upload");
+      navigate("/upload?mode=story", { state: { from: "story" } });
     } else if (story && username == "Your Story") {
       handleViewers();
       navigate(`/story/${userData.username}`);
@@ -51,10 +51,9 @@ const StoryDp = ({ username, profileImage, story }) => {
   };
 
   return (
-    <div className="flex flex-col w-[80px]" onClick={handleClick}>
+    <div className="flex flex-col w-[80px] cursor-pointer" onClick={handleClick}>
       <div
         className={`w-[80px] h-[80px] relative ${!story ? null : !viewed ?"bg-gradient-to-b from-blue-500 to-blue-950" : "bg-gradient-to-b from-gray-500 to-black-800"} rounded-full flex justify-center items-center`}
-        onClick={handleClick}
       >
         <div className="w-[70px] h-[70px] border-2 border-black rounded-full cursor-pointer overflow-hidden">
           <img

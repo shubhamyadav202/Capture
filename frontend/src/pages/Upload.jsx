@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { IoArrowBackSharp } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { FaRegSquarePlus } from "react-icons/fa6";
 import VideoPlayer from "../components/VideoPlayer";
 import axios from "axios";
@@ -14,7 +14,11 @@ import { setUserData } from "../redux/userSlice.js";
 
 const Upload = () => {
   const navigate = useNavigate();
-  const [uploadType, setUploadType] = useState("post");
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const fromStory =
+    location.state?.from === "story" || searchParams.get("mode") === "story";
+  const [uploadType, setUploadType] = useState(fromStory ? "story" : "post");
   const [frontendMedia, setFrontendMedia] = useState(null);
   const [backendMedia, setBackendMedia] = useState(null);
   const [mediaType, setMediaType] = useState("");
@@ -130,23 +134,40 @@ const Upload = () => {
       </div>
 
       <div className="w-[90%] max-w-[600px] h-[80px] bg-[white] rounded-full flex justify-around items-center gap-[10px]">
-        <div
-          className={`${uploadType == "post" ? "bg-black text-white shadow-2xl shadow-black " : ""}w-[28%] h-[80%] flex justify-center items-center text-[19px] font-semibold hover:bg-black rounded-full hover:text-white cursor-pointer hover:shadow-2xl hover:shadow-black`}
-          onClick={() => setUploadType("post")}
-        >
-          Post
-        </div>
+        {!fromStory && (
+          <div
+            className={`${uploadType == "post" ? "bg-black text-white shadow-2xl shadow-black " : ""}w-[28%] h-[80%] flex justify-center items-center text-[19px] font-semibold hover:bg-black rounded-full hover:text-white cursor-pointer hover:shadow-2xl hover:shadow-black`}
+            onClick={() => {
+              setUploadType("post");
+              setFrontendMedia(null);
+              setBackendMedia(null);
+              setCaption("");
+            }}
+          >
+            Post
+          </div>
+        )}
 
         <div
-          className={`${uploadType == "story" ? "bg-black text-white shadow-2xl shadow-black " : ""}w-[28%] h-[80%] flex justify-center items-center text-[19px] font-semibold hover:bg-black rounded-full hover:text-white cursor-pointer hover:shadow-2xl hover:shadow-black`}
-          onClick={() => setUploadType("story")}
+          className={`${uploadType == "story" ? "bg-black text-white shadow-2xl shadow-black " : ""}${fromStory ? "w-[45%]" : "w-[28%]"} h-[80%] flex justify-center items-center text-[19px] font-semibold hover:bg-black rounded-full hover:text-white cursor-pointer hover:shadow-2xl hover:shadow-black transition-all`}
+          onClick={() => {
+            setUploadType("story");
+            setFrontendMedia(null);
+            setBackendMedia(null);
+            setCaption("");
+          }}
         >
           Story
         </div>
 
         <div
-          className={`${uploadType == "loop" ? "bg-black text-white shadow-2xl shadow-black " : ""}w-[28%] h-[80%] flex justify-center items-center text-[19px] font-semibold hover:bg-black rounded-full hover:text-white cursor-pointer hover:shadow-2xl hover:shadow-black`}
-          onClick={() => setUploadType("loop")}
+          className={`${uploadType == "loop" ? "bg-black text-white shadow-2xl shadow-black " : ""}${fromStory ? "w-[45%]" : "w-[28%]"} h-[80%] flex justify-center items-center text-[19px] font-semibold hover:bg-black rounded-full hover:text-white cursor-pointer hover:shadow-2xl hover:shadow-black transition-all`}
+          onClick={() => {
+            setUploadType("loop");
+            setFrontendMedia(null);
+            setBackendMedia(null);
+            setCaption("");
+          }}
         >
           Loop
         </div>
@@ -201,10 +222,10 @@ const Upload = () => {
 
       {frontendMedia && (
         <button
-          className="px-[10px] w-[60%] max-w-[400px] py-[5px] h-[50px] bg-white mt-[50px] cursor-pointer rounded-2xl"
+          className="px-[10px] w-[60%] max-w-[400px] py-[5px] h-[50px] bg-white mt-[50px] cursor-pointer rounded-2xl flex items-center justify-center font-semibold"
           onClick={handleUpload}
         >
-          {loading ? <ClipLoader size={30} colour='black'/> : `Upload ${uploadType}`}
+          {loading ? <ClipLoader size={25} color="black" /> : `Upload ${uploadType}`}
         </button>
       )}
     </div>
