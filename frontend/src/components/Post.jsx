@@ -25,6 +25,7 @@ const Post = ({ post }) => {
   const [showComment, setShowComment] = useState(false);
   const [message, setMessage] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [commentLoading, setCommentLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -84,6 +85,8 @@ const Post = ({ post }) => {
   };
 
   const handleComment = async () => {
+    if (!message.trim() || commentLoading) return;
+    setCommentLoading(true);
     try {
       const result = await axios.post(
         `${serverUrl}/api/post/comment/${post._id}`,
@@ -98,8 +101,11 @@ const Post = ({ post }) => {
         p._id == post._id ? updatedPost : p,
       );
       dispatch(setPostData(updatedPosts));
+      setMessage("");
     } catch (error) {
       console.log(error);
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -266,10 +272,15 @@ const Post = ({ post }) => {
               value={message}
             />
             <button
-              className="absolute right-[20px] cursor-pointer"
+              disabled={commentLoading}
+              className="absolute right-[20px] cursor-pointer disabled:opacity-50"
               onClick={handleComment}
             >
-              <IoSend className="w-[25px] h-[25px]" />
+              {commentLoading ? (
+                <ClipLoader size={18} color="black" />
+              ) : (
+                <IoSend className="w-[25px] h-[25px]" />
+              )}
             </button>
           </div>
 

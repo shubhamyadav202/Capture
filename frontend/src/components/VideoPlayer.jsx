@@ -12,15 +12,16 @@ const VideoPlayer = ({ media }) => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         const video = videoTag.current;
+        if (!video) return;
         if (entry.isIntersecting) {
-          video.play();
+          video.play().catch(() => {});
           setIsPlaying(true);
         } else {
           video.pause();
           setIsPlaying(false);
         }
       },
-      { threshold: 0.6 },
+      { threshold: 0.2 },
     );
 
     if (videoTag.current) {
@@ -35,35 +36,40 @@ const VideoPlayer = ({ media }) => {
   }, []);
 
   const handleClick = () => {
+    if (!videoTag.current) return;
     if (isPlaying) {
       videoTag.current.pause();
       setIsPlaying(false);
     } else {
-      videoTag.current.play();
+      videoTag.current.play().catch(() => {});
       setIsPlaying(true);
     }
   };
 
   return (
-    <div className="h-[100%] relative cursor-pointer max-w-full overflow-hidden rounded-2xl">
+    <div className="w-full h-full relative cursor-pointer overflow-hidden rounded-2xl flex items-center justify-center">
       <video
         ref={videoTag}
         src={media}
         autoPlay
         loop
         muted={mute}
-        className="h-[100%] cursor-pointer w-full object-cover rounded-2xl"
+        playsInline
+        className="w-full h-full object-contain rounded-2xl"
         onClick={handleClick}
       ></video>
 
       <div
-        className="absolute bottom-[10px] right-[10px]"
-        onClick={() => setMute((prev) => !prev)}
+        className="absolute bottom-[15px] right-[15px] bg-black/60 hover:bg-black p-2 rounded-full cursor-pointer z-10 transition-all backdrop-blur-sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          setMute((prev) => !prev);
+        }}
       >
         {!mute ? (
-          <FaVolumeHigh className="w-[20px] h-[20px] text-white font-semibold" />
+          <FaVolumeHigh className="w-[18px] h-[18px] text-white font-semibold" />
         ) : (
-          <IoMdVolumeOff className="w-[20px] h-[20px] text-white font-semibold" />
+          <IoMdVolumeOff className="w-[18px] h-[18px] text-white font-semibold" />
         )}
       </div>
     </div>

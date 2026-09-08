@@ -24,6 +24,9 @@ import getPrevChatUsers from "./hooks/getPrevChatUsers.jsx";
 import Search from "./pages/Search.jsx";
 import Notifications from "./components/Notifications.jsx";
 import getAllNotifications from "./hooks/getAllNotifications.jsx";
+import { removeStory, addStoryToList, setCurrentUserStory } from "./redux/storySlice.js";
+import { setNotificationData, setUserData } from "./redux/userSlice.js";
+
 export const serverUrl = "http://localhost:8080";
 
 function App() {
@@ -61,9 +64,45 @@ function App() {
     }
   }, [userData]);
 
-  socket?.on("newNotification", (noti) => {
-    dispatch(setNotificationData([...notificationData, noti]))
-  })
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleDeletedStory = (data) => {
+      dispatch(removeStory({ storyId: data.storyId, authorId: data.authorId }));
+      if (userData && data.authorId === userData._id?.toString()) {
+        dispatch(setUserData({ ...userData, story: null }));
+      }
+    };
+
+    const handleNewStory = (newStory) => {
+      const authorId = (newStory.author?._id || newStory.author)?.toString();
+      const currentUserId = userData?._id?.toString();
+
+      if (currentUserId && authorId === currentUserId) {
+        dispatch(setCurrentUserStory(newStory));
+      } else if (
+        userData?.following?.some(
+          (f) => (f?._id || f)?.toString() === authorId,
+        )
+      ) {
+        dispatch(addStoryToList(newStory));
+      }
+    };
+
+    const handleNewNotification = (noti) => {
+      dispatch(setNotificationData([...notificationData, noti]));
+    };
+
+    socket.on("deletedStory", handleDeletedStory);
+    socket.on("newStory", handleNewStory);
+    socket.on("newNotification", handleNewNotification);
+
+    return () => {
+      socket.off("deletedStory", handleDeletedStory);
+      socket.off("newStory", handleNewStory);
+      socket.off("newNotification", handleNewNotification);
+    };
+  }, [socket, userData, notificationData, dispatch]);
 
   return (
     <Routes>

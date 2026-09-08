@@ -10,15 +10,20 @@ import OtherUsers from "./OtherUsers.jsx";
 import { useNavigate } from "react-router-dom";
 import Notifications from "./Notifications.jsx";
 
+import { ClipLoader } from "react-spinners";
+
 const LeftHome = () => {
   const { userData, suggestedUsers } = useSelector((state) => state.user);
 
   const [showNotification, setShowNotification] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { notificationData } = useSelector((state) => state.user);
 
   const handleLogOut = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
     try {
       const result = await axios.get(`${serverUrl}/api/auth/signout`, {
         withCredentials: true,
@@ -26,6 +31,8 @@ const LeftHome = () => {
       dispatch(setUserData(null));
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -69,10 +76,10 @@ const LeftHome = () => {
               </div>
             </div>
             <div
-              className="text-blue-500 font-semibold cursor-pointer"
+              className="text-blue-500 font-semibold cursor-pointer flex items-center justify-center min-w-[60px]"
               onClick={handleLogOut}
             >
-              Log out
+              {loggingOut ? <ClipLoader size={16} color="#3b82f6" /> : "Log out"}
             </div>
           </div>
 

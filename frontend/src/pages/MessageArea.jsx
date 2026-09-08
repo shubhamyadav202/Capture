@@ -9,6 +9,7 @@ import { serverUrl } from "../App.jsx";
 import { setMessages } from "../redux/messageSlice.js";
 import SenderMessage from "../components/SenderMessage.jsx";
 import ReceiverMessage from "../components/ReceiverMessage.jsx";
+import { ClipLoader } from "react-spinners";
 import axios from "axios";
 
 const MessageArea = () => {
@@ -18,19 +19,23 @@ const MessageArea = () => {
   const [input, setInput] = useState("");
   const [frontendImage, setFrontendImage] = useState(null);
   const [backendImage, setBackendImage] = useState(null);
+  const [sending, setSending] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const imageInput = useRef();
 
   const handleImage = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (!file) return;
     setBackendImage(file);
     setFrontendImage(URL.createObjectURL(file));
   };
 
   const handleSubmitMessage = async (e) => {
     e.preventDefault();
-    if (!selectedUser?._id) return;
+    if (!selectedUser?._id || (!input.trim() && !backendImage) || sending) return;
+    setSending(true);
     try {
       const formData = new FormData();
       formData.append("message", input);
@@ -50,10 +55,14 @@ const MessageArea = () => {
       setFrontendImage(null);
     } catch (error) {
       console.log(error.response?.data || error);
+    } finally {
+      setSending(false);
     }
   };
 
   const getAllMessages = async () => {
+    if (!selectedUser?._id) return;
+    setLoadingMessages(true);
     try {
       const result = await axios.get(
         `${serverUrl}/api/message/getAll/${selectedUser._id}`,
@@ -63,6 +72,8 @@ const MessageArea = () => {
       dispatch(setMessages(result.data));
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingMessages(false);
     }
   };
 
@@ -107,15 +118,25 @@ const MessageArea = () => {
         </div>
       </div>
 
-      <div className="w-full h-[80%] pt-[100px] px-[40px] flex  flex-col gap-[50px] overflow-auto bg-black">
-        {messages &&
+      <div className="w-full h-[80%] pt-[100px] px-[40px] flex flex-col gap-[50px] overflow-auto bg-black">
+        {loadingMessages ? (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+            <ClipLoader size={35} color="white" />
+            <span className="text-gray-400 text-sm">Loading messages...</span>
+          </div>
+        ) : messages && messages.length > 0 ? (
           messages.map((mess, index) =>
             mess.sender == userData._id ? (
-              <SenderMessage message={mess} />
+              <SenderMessage key={mess._id || index} message={mess} />
             ) : (
-              <ReceiverMessage message={mess} />
+              <ReceiverMessage key={mess._id || index} message={mess} />
             ),
-          )}
+          )
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
+            No messages yet. Say hello!
+          </div>
+        )}
       </div>
 
       <div className="w-full h-[80px] fixed bottom-0 flex justify-center items-center bg-black z-[100]">
@@ -124,8 +145,8 @@ const MessageArea = () => {
           onSubmit={handleSubmitMessage}
         >
           {frontendImage && (
-            <div className="w-[100px] rounded-2xl h-[100px] absolute top-[-120px] right-[10px] overflow-hidden">
-              <img src={frontendImage} className="h-full object-cover" alt="" />
+            <div className="w-[100px] rounded-2xl h-[100px] absolute top-[-120px] right-[10px] overflow-hidden border border-gray-700">
+              <img src={frontendImage} className="h-full w-full object-cover" alt="" />
             </div>
           )}
 
@@ -147,14 +168,22 @@ const MessageArea = () => {
 
           <div>
             <FaRegImage
-              className="w-[28px] h-[28px] mt-[6px] cursor-pointer text-white"
-              onClick={() => imageInput.current.click()}
+              className="w-[28px] h-[28px] mt-[6px] cursor-pointer text-white hover:text-gray-300 transition-all"
+              onClick={() => imageInput.current?.click()}
             />
           </div>
 
           {(input || frontendImage) && (
-            <button className="w-[60px] h-[40px] cursor-pointer rounded-full bg-gradient-to-br from-[#9500ff] to-[#ff0095] flex items-center justify-center">
-              <IoSend className="w-[25px] h-[25px] text-white" />
+            <button
+              type="submit"
+              disabled={sending}
+              className="w-[60px] h-[40px] cursor-pointer rounded-full bg-gradient-to-br from-[#9500ff] to-[#ff0095] flex items-center justify-center disabled:opacity-50"
+            >
+              {sending ? (
+                <ClipLoader size={18} color="white" />
+              ) : (
+                <IoSend className="w-[25px] h-[25px] text-white" />
+              )}
             </button>
           )}
         </form>

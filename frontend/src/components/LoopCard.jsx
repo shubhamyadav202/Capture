@@ -27,6 +27,7 @@ const LoopCard = ({ loop }) => {
   const [progress, setProgress] = useState(0);
   const [showHeart, setShowHeart] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [commentLoading, setCommentLoading] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [message, setMessage] = useState("");
   const commentRef = useRef();
@@ -43,10 +44,10 @@ const LoopCard = ({ loop }) => {
 
   const handleLikeOnDoubleClick = () => {
     setShowHeart(true);
-    setTimeout(() => setShowHeart(false), 6000);
-    {
-      !loop.likes?.includes(userData._id) ? handleLike() : null;
-    }
+    handleLike();
+    setTimeout(() => {
+      setShowHeart(false);
+    }, 1500);
   };
 
   const handleLike = async () => {
@@ -83,6 +84,8 @@ const LoopCard = ({ loop }) => {
   };
 
   const handleComment = async () => {
+    if (!message.trim() || commentLoading) return;
+    setCommentLoading(true);
     try {
       const result = await axios.post(
         `${serverUrl}/api/loop/comment/${loop._id}`,
@@ -100,6 +103,8 @@ const LoopCard = ({ loop }) => {
       setMessage("");
     } catch (error) {
       console.log(error);
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -234,10 +239,15 @@ const LoopCard = ({ loop }) => {
           />
           {message && (
             <button
-              className="absolute right-[20px] cursor-pointer"
+              disabled={commentLoading}
+              className="absolute right-[20px] cursor-pointer disabled:opacity-50"
               onClick={handleComment}
             >
-              <IoSend className="w-[25px] text-white h-[25px]" />
+              {commentLoading ? (
+                <ClipLoader size={18} color="white" />
+              ) : (
+                <IoSend className="w-[25px] text-white h-[25px]" />
+              )}
             </button>
           )}
         </div>

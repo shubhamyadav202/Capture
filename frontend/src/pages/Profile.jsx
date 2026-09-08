@@ -11,11 +11,14 @@ import Nav from "../components/Nav.jsx";
 import FollowButton from "../components/FollowButton.jsx";
 import Post from "../components/Post.jsx";
 import { setSelectedUser } from "../redux/messageSlice.js";
+import { ClipLoader } from "react-spinners";
 
 const Profile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [postType, setPostType] = useState("posts");
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const { username } = useParams();
 
@@ -24,6 +27,7 @@ const Profile = () => {
   const { postData } = useSelector((state) => state.post);
 
   const handleProfile = async () => {
+    setLoadingProfile(true);
     try {
       const result = await axios.get(
         `${serverUrl}/api/user/getProfile/${username}`,
@@ -32,10 +36,14 @@ const Profile = () => {
       dispatch(setProfileData(result.data));
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingProfile(false);
     }
   };
 
   const handleLogOut = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
     try {
       const result = await axios.get(`${serverUrl}/api/auth/signout`, {
         withCredentials: true,
@@ -43,6 +51,8 @@ const Profile = () => {
       dispatch(setUserData(null));
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -61,12 +71,20 @@ const Profile = () => {
         </div>
         <div className="font-semibold text-[20px]">{profileData?.username}</div>
         <div
-          className="font-semibold cursor-pointer text-[20px] text-blue-500"
+          className="font-semibold cursor-pointer text-[18px] text-blue-500 flex items-center justify-center min-w-[70px]"
           onClick={handleLogOut}
         >
-          Log Out
+          {loggingOut ? <ClipLoader size={18} color="#3b82f6" /> : "Log Out"}
         </div>
       </div>
+
+      {loadingProfile || !profileData ? (
+        <div className="w-full py-32 flex flex-col items-center justify-center gap-3">
+          <ClipLoader size={35} color="white" />
+          <span className="text-gray-400 text-sm">Loading profile...</span>
+        </div>
+      ) : (
+        <>
 
       <div className="w-full h-[150px] flex items-start gap-[20px] lg:gap-[50px] pt-[20px] px-[10px] justify-center">
         <div className="w-[80px] h-[80px] md:w-[140px] md:h-[140px] border-2 border-black rounded-full cursor-pointer overflow-hidden">
@@ -214,10 +232,12 @@ const Profile = () => {
           {profileData?._id != userData._id &&
             postData.map(
               (post, index) =>
-                post.author?._id == profileData?._id && <Post post={post} />,
+                post.author?._id == profileData?._id && <Post post={post} key={index} />,
             )}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

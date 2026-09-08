@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import Post from "./Post.jsx";
 import { BiMessageRoundedDots } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 
 const Feed = () => {
   const { postData } = useSelector((state) => state.post);
@@ -52,9 +53,18 @@ const Feed = () => {
       <div className="w-full min-h-[100vh] flex flex-col items-center gap-[20px] p-[10px] pt-[40px] bg-white rounded-t-[60px] relative pb-[120px]">
         <Nav />
 
-        {postData?.map((post, index) => (
-          <Post post={post} key={index} />
-        ))}
+        {!postData ? (
+          <div className="py-20 flex flex-col items-center gap-3">
+            <ClipLoader size={35} color="black" />
+            <span className="text-gray-500 text-sm font-medium">Loading feed...</span>
+          </div>
+        ) : postData.length === 0 ? (
+          <div className="text-gray-400 py-20 text-center font-medium">No posts yet</div>
+        ) : (
+          postData.map((post, index) => (
+            <Post post={post} key={post._id || index} />
+          ))
+        )}
       </div>
     </div>
   );

@@ -23,7 +23,32 @@ const StoryCard = ({ storyData }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const { userData } = useSelector((state) => state.user);
   const { storyList } = useSelector((state) => state.story);
+  const { socket } = useSelector((state) => state.socket);
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleDeletedStory = (data) => {
+      const currentStoryId = storyData?._id?.toString();
+      const currentAuthorId = (
+        storyData?.author?._id || storyData?.author
+      )?.toString();
+
+      if (
+        (data.storyId && currentStoryId === data.storyId.toString()) ||
+        (data.authorId && currentAuthorId === data.authorId.toString())
+      ) {
+        navigate("/");
+      }
+    };
+
+    socket.on("deletedStory", handleDeletedStory);
+
+    return () => {
+      socket.off("deletedStory", handleDeletedStory);
+    };
+  }, [socket, storyData, navigate]);
 
   const handleDelete = async () => {
     if (isDeleting || !storyData?._id) return;
@@ -52,7 +77,7 @@ const StoryCard = ({ storyData }) => {
   };
 
   useEffect(() => {
-    if (showViewers) return;
+    if (showViewers || !storyData) return;
 
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -67,7 +92,7 @@ const StoryCard = ({ storyData }) => {
     }, 150);
 
     return () => clearInterval(interval);
-  }, [navigate, showViewers]);
+  }, [navigate, showViewers, storyData]);
 
   return (
     <div className="w-full max-w-[500px] h-[100vh] border-x-2 border-gray-800 pt-[10px] relative flex flex-col justify-center">
@@ -119,19 +144,26 @@ const StoryCard = ({ storyData }) => {
 
       {!showViewers && (
         <>
-          <div className="w-full h-[90vh] flex items-center justify-center">
+          <div className="w-full h-[90vh] flex items-center justify-center relative">
+            {!storyData && (
+              <div className="flex flex-col items-center gap-3">
+                <ClipLoader size={35} color="white" />
+                <span className="text-gray-400 text-sm">Loading story...</span>
+              </div>
+            )}
+
             {storyData?.mediaType == "image" && (
-              <div className="w-[90%] flex items-center justify-center">
+              <div className="w-full h-full max-h-[85vh] flex items-center justify-center p-2">
                 <img
                   src={storyData?.media}
                   alt=""
-                  className="w-[80%] rounded-2xl object-cover"
+                  className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl"
                 />
               </div>
             )}
 
             {storyData?.mediaType == "video" && (
-              <div className="w-[80%] flex flex-col items-center justify-center">
+              <div className="w-full h-[80vh] flex items-center justify-center p-2">
                 <VideoPlayer media={storyData?.media} />
               </div>
             )}
