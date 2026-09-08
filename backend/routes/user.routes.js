@@ -27,7 +27,7 @@ userRouter.get("/search", isAuth, search);
 
 userRouter.get("/getAllNotifications", isAuth, getAllNotifications);
 
-userRouter.get("/markAsRead/:notificationId", isAuth, markAsRead);
+userRouter.post("/markAsRead", isAuth, markAsRead);
 
 userRouter.get("/followingList", isAuth, followingList);
 

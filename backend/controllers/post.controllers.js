@@ -74,7 +74,7 @@ export const like = async (req, res) => {
           sender: req.userId,
           receiver: post.author._id,
           type: "like",
-          post : post._id,
+          post: post._id,
           message: "Liked Your Post",
         });
 
@@ -128,7 +128,7 @@ export const comment = async (req, res) => {
         sender: req.userId,
         receiver: post.author._id,
         type: "comment",
-        post : post._id,
+        post: post._id,
         message: "Commented on your post",
       });
 

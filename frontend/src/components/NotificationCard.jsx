@@ -25,25 +25,24 @@ const NotificationCard = ({ noti }) => {
         </div>
       </div>
 
-      <div className="w-[40px] h-[40px] border-1 border-black rounded-full overflow-hidden">
-        {noti.post && noti?.post?.mediaType == "image" ? (
-          <img src={noti?.post?.media} className="w-full h-full object-cover" />
-        ) : (
-          <video
-            src={noti?.post?.media}
-            muted
-            loop
-            className="w-full h-full  object-cover"
-          />
-        )}
-        {noti.loop && (
+      <div className="w-[40px] h-[40px] border-1 border-black rounded-xl overflow-hidden">
+        {noti.loop ? (
           <video
             src={noti?.loop?.media}
             muted
-            loop
-            className="w-full h-full  object-cover"
+            className="h-full w-full object-cover"
           />
-        )}
+        ) : noti.post?.mediaType == "image" ? (
+          <img src={noti.post?.media} className="h-full w-full object-cover" />
+        ) : noti.post ? (
+          <video
+            src={noti.post?.media}
+            muted
+            loop 
+            autoPlay
+            className="h-full w-full object-cover"
+          />
+        ) : null}
       </div>
     </div>
   );
