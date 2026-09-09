@@ -17,7 +17,7 @@
   <b>A feature-rich, high-performance social networking platform inspired by modern media applications. Built with a scalable MERN stack, bi-directional WebSockets for real-time communication, automated TTL ephemeral stories, Cloudinary media pipeline, and a responsive modern UI.</b>
 </p>
 
-[Key Features](#-key-features) • [System Architecture](#-system-architecture) • [Resume Highlights](#-resume-bullet-points-for-cv) • [Tech Stack](#-tech-stack) • [Database Design](#-database-schema-design) • [API Reference](#-api-endpoints) • [Getting Started](#-getting-started)
+[Key Features](#-key-features) • [System Architecture](#-system-architecture) • [Tech Stack](#-tech-stack) • [Database Design](#-database-schema-design) • [API Reference](#-api-endpoints) • [Getting Started](#-getting-started)
 
 </div>
 
@@ -28,19 +28,6 @@
 **Capture** is an end-to-end full-stack social media application engineered to deliver the responsive, dynamic experience of modern platforms like Instagram. It supports multimedia post feeds, vertical short-form video streaming (**Loops**), automated 24-hour self-destructing **Stories**, real-time peer-to-peer **Direct Messaging** with image attachments, live presence tracking, instant event notifications, and a complete social graph with follow/unfollow and user discovery mechanisms.
 
 Built with an emphasis on production-ready architecture, security (JWT stored in secure HTTP-only cookies, bcrypt password hashing, and email OTP verification via Nodemailer), and clean state management (Redux Toolkit with 6 modular slices).
-
----
-
-## 💼 Resume Bullet Points (For CV / Portfolio)
-
-> *Feel free to copy and adapt these bullet points directly for your resume:*
-
-- **Full-Stack Social Platform Architecture**: Engineered a responsive full-stack social media application (**Capture**) using **React 19, Vite, Node.js, Express 5, and MongoDB Atlas**, supporting 10+ core social features including feed posts, short-form reels, ephemeral stories, and real-time chat.
-- **Bi-Directional Real-Time Communication**: Implemented low-latency 1-on-1 private messaging and real-time event broadcasting using **Socket.io**, featuring active user presence tracking, live unread badges, and non-intrusive floating toast notifications for incoming messages.
-- **Automated Ephemeral Content Management**: Built an Instagram-style Stories feature utilizing **MongoDB TTL (Time-To-Live) indexing** to automatically expire and purge media records after 24 hours (`86400s`), eliminating manual cron overhead and database bloat.
-- **Optimized Cloud Media Pipeline**: Integrated **Multer** and **Cloudinary CDN** for seamless upload, processing, and streaming of high-resolution images and vertical videos (**Loops**), implementing temporary disk storage cleanup (`fs.unlinkSync`) to prevent server memory bloat.
-- **Robust Authentication & Recovery**: Implemented secure authentication with **JWT** stored in **HTTP-only, SameSite cookies**, salted password encryption with **bcryptjs**, and an automated 6-digit OTP password reset workflow via **Nodemailer SMTP**.
-- **Centralized Global State Management**: Architected global client state using **Redux Toolkit** across 6 specialized slices (`user`, `post`, `loop`, `story`, `message`, `socket`), streamlining asynchronous operations and preventing unnecessary re-renders.
 
 ---
 
