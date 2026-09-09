@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import path from "path";
 
 const uploadOnCloudinary = async (file) => {
   try {
@@ -9,20 +10,27 @@ const uploadOnCloudinary = async (file) => {
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-    const result = await cloudinary.uploader.upload_large(file, {
+    const absolutePath = path.resolve(file);
+    if (!fs.existsSync(absolutePath)) {
+      console.log("File not found for Cloudinary upload:", absolutePath);
+      return null;
+    }
+
+    const result = await cloudinary.uploader.upload(absolutePath, {
       resource_type: "auto",
-      chunk_size: 6000000, // 6MB chunks for faster video upload & reliability
     });
 
-    if (fs.existsSync(file)) {
-      fs.unlinkSync(file); // deleting the temp file
+    if (fs.existsSync(absolutePath)) {
+      fs.unlinkSync(absolutePath); // deleting the temp file
     }
     return result.secure_url;
   } catch (error) {
-    if (fs.existsSync(file)) {
-      fs.unlinkSync(file); // deleting the temp file
+    const absolutePath = path.resolve(file);
+    if (fs.existsSync(absolutePath)) {
+      fs.unlinkSync(absolutePath); // deleting the temp file
     }
     console.log("Cloudinary upload error:", error);
+    throw error;
   }
 };
 

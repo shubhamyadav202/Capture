@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Signup from "./pages/Signup.jsx";
-import Signin from "./pages/SignIn.jsx";
+import Signin from "./pages/Signin.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Home from "./pages/Home.jsx";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,7 +30,8 @@ import { setNotificationData, setUserData } from "./redux/userSlice.js";
 import { addMessage, moveChatToTop } from "./redux/messageSlice.js";
 import axios from "axios";
 
-export const serverUrl = "http://localhost:8080";
+export const serverUrl =
+  import.meta.env.VITE_SERVER_URL || "http://localhost:8080";
 
 function App() {
   getCurrentUser();

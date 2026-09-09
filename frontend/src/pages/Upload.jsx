@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { IoArrowBackSharp } from "react-icons/io5";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { FaRegSquarePlus } from "react-icons/fa6";
-import VideoPlayer from "../components/VideoPlayer";
+import VideoPlayer from "../components/VideoPlayer.jsx";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
 import { useDispatch, useSelector } from "react-redux";
@@ -72,11 +72,11 @@ const Upload = () => {
         },
       );
 
-      dispatch(setPostData([...postData, result.data]));
+      dispatch(setPostData([result.data, ...(postData || [])]));
       setLoading(false);
       navigate("/");
     } catch (error) {
-      console.log(error);
+      console.log("Upload post error:", error.response?.data || error);
       setLoading(false);
     }
   };

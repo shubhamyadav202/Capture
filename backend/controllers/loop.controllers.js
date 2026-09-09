@@ -16,6 +16,12 @@ export const uploadLoop = async (req, res) => {
       return res.status(400).json({ message: "Media is Required" });
     }
 
+    if (!media) {
+      return res
+        .status(500)
+        .json({ message: "Cloudinary upload failed: No media returned" });
+    }
+
     const loop = await Loop.create({
       caption,
       media,

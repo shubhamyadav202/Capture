@@ -47,7 +47,10 @@ export const editProfile = async (req, res) => {
       "-password",
     );
 
-    if (sameUserWithUsername && sameUserWithUsername._id != req.userId) {
+    if (
+      sameUserWithUsername &&
+      sameUserWithUsername._id.toString() !== req.userId.toString()
+    ) {
       return res.status(400).json({ message: "Username Already Exists" });
     }
 

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoArrowBackSharp } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
-import NotificationCard from "./NotificationCard";
+import NotificationCard from "./NotificationCard.jsx";
 import { serverUrl } from "../App.jsx";
 import axios from "axios";
 import { setNotificationData } from "../redux/userSlice.js";

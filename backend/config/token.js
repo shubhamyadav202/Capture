@@ -7,7 +7,8 @@ const generateToken = async (userId) => {
     });
     return token;
   } catch (error) {
-    return res.status(500).json(`generation token error ${error}`);
+    console.log("generateToken error:", error);
+    throw error;
   }
 };
 

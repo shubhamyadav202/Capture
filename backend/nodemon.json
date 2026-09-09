@@ -1,4 +1,5 @@
 {
-  "watch": ["*"],
+  "watch": ["."],
+  "ext": "js,json",
   "ignore": ["public/*", "*.log", "node_modules/*"]
 }

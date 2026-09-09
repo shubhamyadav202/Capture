@@ -39,7 +39,8 @@ desktop.ini
 *.sw?
 
 # ===== Uploaded Files (Multer) =====
-backend/public/uploads/
+backend/public/*
+!backend/public/.gitkeep
 
 # ===== Misc =====
 *.local

@@ -3,6 +3,16 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import sendMail from "../config/mail.js";
 
+const getCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  };
+};
+
 export const signUp = async (req, res) => {
   try {
     const { name, username, password, email } = req.body;
@@ -37,12 +47,7 @@ export const signUp = async (req, res) => {
 
     const token = await generateToken(user._id);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
-      secure: false,
-      sameSite: "strict",
-    });
+    res.cookie("token", token, getCookieOptions());
 
     return res.status(200).json(user);
   } catch (error) {
@@ -68,12 +73,7 @@ export const signIn = async (req, res) => {
 
     const token = await generateToken(user._id);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
-      secure: false,
-      sameSite: "strict",
-    });
+    res.cookie("token", token, getCookieOptions());
 
     return res.status(200).json(user);
   } catch (error) {
@@ -83,7 +83,7 @@ export const signIn = async (req, res) => {
 
 export const signOut = async (req, res) => {
   try {
-    res.clearCookie("token");
+    res.clearCookie("token", getCookieOptions());
     return res.status(200).json({ message: "Sign out Successfully" });
   } catch (error) {
     return res.status(500).json({ message: `Singout Error ${error}` });
@@ -118,13 +118,17 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || user.resetOtp !== otp || user.otpExpires < Date.now()) {
+    if (!user) {
+      return res.status(400).json({ message: "User not Found" });
+    }
+
+    if (user.resetOtp != otp || user.otpExpires < Date.now()) {
       return res.status(400).json({ message: "Invalid or Expired Otp" });
     }
 
     user.isOtpVerified = true;
-    user.resetOtp = undefined;
-    user.otpExpires = undefined;
+    user.resetOtp = null;
+    user.otpExpires = null;
 
     await user.save();
 
@@ -140,10 +144,7 @@ export const resetPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user || !user.isOtpVerified) {
-      return (
-        res.status(400),
-        json({ message: "Otp Verification is Required" })
-      );
+      return res.status(400).json({ message: "Otp Verification is Required" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
