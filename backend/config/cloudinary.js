@@ -9,15 +9,20 @@ const uploadOnCloudinary = async (file) => {
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-    const result = await cloudinary.uploader.upload(file, {
+    const result = await cloudinary.uploader.upload_large(file, {
       resource_type: "auto",
+      chunk_size: 6000000, // 6MB chunks for faster video upload & reliability
     });
-    fs.unlinkSync(file); // deleting the file
+
+    if (fs.existsSync(file)) {
+      fs.unlinkSync(file); // deleting the temp file
+    }
     return result.secure_url;
   } catch (error) {
-    fs.unlinkSync(file); // deleting the file
-    // fs.writeFileSync("error.log", error.toString() + "\n" + JSON.stringify(error) + "\n" + JSON.stringify(process.env.CLOUDINARY_CLOUD_NAME));
-    console.log(error);
+    if (fs.existsSync(file)) {
+      fs.unlinkSync(file); // deleting the temp file
+    }
+    console.log("Cloudinary upload error:", error);
   }
 };
 

@@ -10,7 +10,8 @@ import { RxButton } from "react-icons/rx";
 import Nav from "../components/Nav.jsx";
 import FollowButton from "../components/FollowButton.jsx";
 import Post from "../components/Post.jsx";
-import { setSelectedUser } from "../redux/messageSlice.js";
+import FollowListModal from "../components/FollowListModal.jsx";
+import { setSelectedUser, markChatAsRead } from "../redux/messageSlice.js";
 import { ClipLoader } from "react-spinners";
 
 const Profile = () => {
@@ -19,6 +20,8 @@ const Profile = () => {
   const [postType, setPostType] = useState("posts");
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const [followModalTab, setFollowModalTab] = useState("followers");
 
   const { username } = useParams();
 
@@ -115,11 +118,18 @@ const Profile = () => {
             Posts
           </div>
         </div>
-        <div>
+        <div
+          className="cursor-pointer flex flex-col items-center hover:opacity-80 transition-opacity"
+          onClick={() => {
+            setFollowModalTab("followers");
+            setShowFollowModal(true);
+          }}
+        >
           <div className="flex items-center justify-center gap-[20px]">
             <div className="flex relative">
               {profileData?.followers?.slice(0, 3).map((user, index) => (
                 <div
+                  key={user?._id || index}
                   className={`w-[40px] h-[40px] border-2 border-black rounded-full cursor-pointer overflow-hidden ${index > 0 ? `absolute left-[${index * 9}px]` : ""}`}
                 >
                   <img
@@ -131,18 +141,25 @@ const Profile = () => {
               ))}
             </div>
             <div className="text-white text-[22px] md:text-[30px] font-semibold">
-              {profileData?.followers.length}
+              {profileData?.followers?.length || 0}
             </div>
           </div>
           <div className="text-[18px] md:text-[22px] text-[#ffffffc7]">
             Followers
           </div>
         </div>
-        <div>
+        <div
+          className="cursor-pointer flex flex-col items-center hover:opacity-80 transition-opacity"
+          onClick={() => {
+            setFollowModalTab("following");
+            setShowFollowModal(true);
+          }}
+        >
           <div className="flex items-center justify-center gap-[20px]">
             <div className="flex relative">
               {profileData?.following?.slice(0, 3).map((user, index) => (
                 <div
+                  key={user?._id || index}
                   className={`w-[40px] h-[40px] border-2 border-black rounded-full cursor-pointer overflow-hidden ${index > 0 ? `absolute left-[${index * 9}px]` : ""}`}
                 >
                   <img
@@ -154,7 +171,7 @@ const Profile = () => {
               ))} 
             </div>
             <div className="text-white text-[22px] md:text-[30px] font-semibold">
-              {profileData?.following.length}
+              {profileData?.following?.length || 0}
             </div>
           </div>
           <div className="text-[18px] md:text-[22px] text-[#ffffffc7]">
@@ -184,6 +201,7 @@ const Profile = () => {
             />
             <button className="px-[10px] min-w-[150px] py-[5px] h-[40px] bg-[white] cursor-pointer rounded-2xl" onClick={()=>{
               dispatch(setSelectedUser(profileData));
+              dispatch(markChatAsRead(profileData?._id));
               navigate("/messageArea");
             }}>
               Message
@@ -238,6 +256,16 @@ const Profile = () => {
       </div>
       </>
       )}
+
+      <FollowListModal
+        isOpen={showFollowModal}
+        onClose={() => setShowFollowModal(false)}
+        initialTab={followModalTab}
+        followers={profileData?.followers || []}
+        following={profileData?.following || []}
+        currentUserId={userData?._id}
+        onFollowChange={handleProfile}
+      />
     </div>
   );
 };

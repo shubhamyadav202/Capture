@@ -7,7 +7,7 @@ import { FaHeart } from "react-icons/fa";
 import { MdOutlineComment } from "react-icons/md";
 import { FaRegBookmark } from "react-icons/fa6";
 import { FaBookmark } from "react-icons/fa6";
-import { IoSend } from "react-icons/io5";
+import { IoSend, IoClose } from "react-icons/io5";
 import { setPostData } from "../redux/postSlice.js";
 import { setProfileData, setUserData } from "../redux/userSlice.js";
 import axios from "axios";
@@ -26,6 +26,7 @@ const Post = ({ post }) => {
   const [message, setMessage] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -106,6 +107,26 @@ const Post = ({ post }) => {
       console.log(error);
     } finally {
       setCommentLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!commentId || deletingCommentId) return;
+    setDeletingCommentId(commentId);
+    try {
+      const result = await axios.delete(
+        `${serverUrl}/api/post/comment/${post._id}/${commentId}`,
+        { withCredentials: true },
+      );
+
+      const updatedPosts = postData.map((p) =>
+        p._id == post._id ? { ...p, comments: result.data.comments } : p,
+      );
+      dispatch(setPostData(updatedPosts));
+    } catch (error) {
+      console.log("Delete comment error:", error);
+    } finally {
+      setDeletingCommentId(null);
     }
   };
 
@@ -255,11 +276,22 @@ const Post = ({ post }) => {
       )}
 
       {showComment && (
-        <div className="w-full flex flex-col gap-[30px] pb-[20px]">
+        <div className="w-full flex flex-col gap-[20px] pb-[20px] border-t border-gray-200 pt-[15px]">
+          <div className="w-full flex justify-between items-center px-[20px]">
+            <span className="font-semibold text-gray-800 text-[16px]">Comments</span>
+            <button
+              onClick={() => setShowComment(false)}
+              className="text-gray-500 hover:text-black cursor-pointer p-1 rounded-full hover:bg-gray-100 transition-colors"
+              title="Close comments"
+            >
+              <IoClose className="w-[24px] h-[24px]" />
+            </button>
+          </div>
+
           <div className="w-full h-[80px] flex items-center justify-between px-[20px] relative">
             <div className="w-[40px] h-[40px] md:w-[60px] md:h-[60px] border-2 border-black rounded-full cursor-pointer overflow-hidden">
               <img
-                src={post.author?.profileImage || dp}
+                src={userData?.profileImage || dp}
                 alt=""
                 className="w-full object-cover"
               />
@@ -285,21 +317,67 @@ const Post = ({ post }) => {
           </div>
 
           <div className="w-full max-h-[300px] overflow-auto">
-            {post.comments?.map((com, index) => (
-              <div
-                key={index}
-                className="w-full px-[20px] py-[20px] flex items-center gap-[20px] border-b-2 border-b-gray-200"
-              >
-                <div className="w-[40px] h-[40px] md:w-[60px] md:h-[60px] border-2 border-black rounded-full cursor-pointer overflow-hidden">
-                  <img
-                    src={com.author.profileImage || dp}
-                    alt=""
-                    className="w-full object-cover"
-                  />
+            {post.comments?.map((com, index) => {
+              const isCommentAuthor =
+                (com.author?._id || com.author)?.toString() ===
+                userData?._id?.toString();
+              const isPostAuthor =
+                (post.author?._id || post.author)?.toString() ===
+                userData?._id?.toString();
+              const canDelete = isCommentAuthor || isPostAuthor;
+
+              return (
+                <div
+                  key={com._id || index}
+                  className="w-full px-[20px] py-[15px] flex items-center justify-between border-b-2 border-b-gray-200"
+                >
+                  <div className="flex items-center gap-[15px] flex-1 min-w-0">
+                    <div
+                      className="w-[40px] h-[40px] md:w-[50px] md:h-[50px] border-2 border-black rounded-full cursor-pointer overflow-hidden flex-shrink-0"
+                      onClick={() =>
+                        com.author?.username &&
+                        navigate(`/getProfile/${com.author.username}`)
+                      }
+                    >
+                      <img
+                        src={com.author?.profileImage || dp}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      {com.author?.username && (
+                        <div
+                          className="font-semibold cursor-pointer hover:underline truncate text-[14px] md:text-[15px]"
+                          onClick={() =>
+                            navigate(`/getProfile/${com.author.username}`)
+                          }
+                        >
+                          {com.author.username}
+                        </div>
+                      )}
+                      <div className="text-[14px] md:text-[15px] text-gray-800 break-words">
+                        {com.message}
+                      </div>
+                    </div>
+                  </div>
+
+                  {canDelete && (
+                    <div className="flex-shrink-0 ml-2">
+                      {deletingCommentId === com._id ? (
+                        <ClipLoader size={18} color="#ef4444" />
+                      ) : (
+                        <RiDeleteBin5Fill
+                          className="w-[20px] h-[20px] text-gray-400 hover:text-red-500 cursor-pointer transition-colors"
+                          onClick={() => handleDeleteComment(com._id)}
+                          title="Delete Comment"
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div>{com.message}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

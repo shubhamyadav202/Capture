@@ -6,7 +6,12 @@ import dp from "../assets/dp.jpg";
 import { FaRegImage } from "react-icons/fa6";
 import { IoSend } from "react-icons/io5";
 import { serverUrl } from "../App.jsx";
-import { setMessages } from "../redux/messageSlice.js";
+import {
+  setMessages,
+  moveChatToTop,
+  markChatAsRead,
+  setSelectedUser,
+} from "../redux/messageSlice.js";
 import SenderMessage from "../components/SenderMessage.jsx";
 import ReceiverMessage from "../components/ReceiverMessage.jsx";
 import { ClipLoader } from "react-spinners";
@@ -15,7 +20,6 @@ import axios from "axios";
 const MessageArea = () => {
   const { selectedUser, messages } = useSelector((state) => state.message);
   const { userData } = useSelector((state) => state.user);
-  const { socket } = useSelector((state) => state.socket);
   const [input, setInput] = useState("");
   const [frontendImage, setFrontendImage] = useState(null);
   const [backendImage, setBackendImage] = useState(null);
@@ -49,7 +53,15 @@ const MessageArea = () => {
         formData,
         { withCredentials: true },
       );
+
       dispatch(setMessages([...messages, result.data]));
+      dispatch(
+        moveChatToTop({
+          user: selectedUser,
+          message: result.data,
+          isIncoming: false,
+        }),
+      );
       setInput("");
       setBackendImage(null);
       setFrontendImage(null);
@@ -70,6 +82,7 @@ const MessageArea = () => {
       );
 
       dispatch(setMessages(result.data));
+      dispatch(markChatAsRead(selectedUser._id));
     } catch (error) {
       console.log(error);
     } finally {
@@ -79,15 +92,10 @@ const MessageArea = () => {
 
   useEffect(() => {
     getAllMessages();
+    return () => {
+      dispatch(setSelectedUser(null));
+    };
   }, []);
-
-  useEffect(() => {
-    socket?.on("newMessage", (mess) => {
-      dispatch(setMessages([...messages, mess]));
-    });
-
-    return () => socket?.off("newMessage")
-  }, [messages, setMessages]);
 
   return (
     <div className="bg-black relative w-full h-[100vh]">
@@ -95,25 +103,28 @@ const MessageArea = () => {
         <div className="h-[80px] flex items-center gap-[20px] px-[20px]">
           <IoArrowBackSharp
             className="text-white cursor-pointer w-[25px] h-[25px]"
-            onClick={() => navigate(`/`)}
+            onClick={() => {
+              dispatch(setSelectedUser(null));
+              navigate(`/`);
+            }}
           />
         </div>
 
         <div
           className="w-[40px] h-[40px] border-2 border-black rounded-full cursor-pointer overflow-hidden"
-          onClick={() => navigate(`/getProfile/${selectedUser.username}`)}
+          onClick={() => navigate(`/getProfile/${selectedUser?.username}`)}
         >
           <img
-            src={selectedUser.profileImage || dp}
+            src={selectedUser?.profileImage || dp}
             alt=""
             className="w-full object-cover"
           />
         </div>
 
         <div className="text-white text-[18px] font-semibold">
-          <div className="cursor-pointer">{selectedUser.name}</div>
+          <div className="cursor-pointer">{selectedUser?.name}</div>
           <div className="text-[14px] cursor-pointer text-gray-400">
-            {selectedUser.username}
+            {selectedUser?.username}
           </div>
         </div>
       </div>
@@ -125,13 +136,17 @@ const MessageArea = () => {
             <span className="text-gray-400 text-sm">Loading messages...</span>
           </div>
         ) : messages && messages.length > 0 ? (
-          messages.map((mess, index) =>
-            mess.sender == userData._id ? (
+          messages.map((mess, index) => {
+            const isSender =
+              (mess.sender?._id || mess.sender)?.toString() ===
+              userData?._id?.toString();
+
+            return isSender ? (
               <SenderMessage key={mess._id || index} message={mess} />
             ) : (
               <ReceiverMessage key={mess._id || index} message={mess} />
-            ),
-          )
+            );
+          })
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
             No messages yet. Say hello!

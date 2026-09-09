@@ -184,3 +184,99 @@ export const saved = async (req, res) => {
     return res.status(500).json({ message: `saved error : ${error}` });
   }
 };
+
+export const deletePost = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.author.toString() !== req.userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this post" });
+    }
+
+    // Remove post from author's posts list
+    await User.findByIdAndUpdate(req.userId, {
+      $pull: { posts: postId },
+    });
+
+    // Remove post from any users who saved it
+    await User.updateMany(
+      { saved: postId },
+      { $pull: { saved: postId } },
+    );
+
+    // Remove notifications related to this post
+    await Notification.deleteMany({ post: postId });
+
+    // Delete post document
+    await Post.findByIdAndDelete(postId);
+
+    // Emit socket event for real-time removal
+    io.emit("deletedPost", { postId });
+
+    return res.status(200).json({
+      message: "Post deleted successfully",
+      postId,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: `deletePost error : ${error}` });
+  }
+};
+
+export const deleteComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const currentUserId = req.userId;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const commentIndex = post.comments.findIndex(
+      (c) => c._id.toString() === commentId,
+    );
+
+    if (commentIndex === -1) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const targetComment = post.comments[commentIndex];
+
+    const isCommentAuthor =
+      targetComment.author.toString() === currentUserId.toString();
+    const isPostAuthor =
+      post.author.toString() === currentUserId.toString();
+
+    if (!isCommentAuthor && !isPostAuthor) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this comment" });
+    }
+
+    post.comments.splice(commentIndex, 1);
+    await post.save();
+
+    await post.populate("author", "name username profileImage");
+    await post.populate("comments.author", "name username profileImage");
+
+    io.emit("commentedPost", {
+      postId: post._id,
+      comments: post.comments,
+    });
+
+    return res.status(200).json({
+      message: "Comment deleted successfully",
+      comments: post.comments,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: `Delete comment error : ${error}` });
+  }
+};
+

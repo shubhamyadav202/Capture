@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setSelectedUser } from "../redux/messageSlice";
+import { setSelectedUser, markChatAsRead } from "../redux/messageSlice";
 import dp from "../assets/dp.jpg";
 
 const OnlineUsers = ({user}) => {
@@ -14,6 +14,7 @@ const OnlineUsers = ({user}) => {
         className="w-[50px] h-[50px] border-2 border-black rounded-full cursor-pointer overflow-hidden"
         onClick={() => {
           dispatch(setSelectedUser(user));
+          dispatch(markChatAsRead(user._id));
           navigate(`/messageArea`);
         }}
       >

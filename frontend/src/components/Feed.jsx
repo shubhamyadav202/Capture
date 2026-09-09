@@ -12,13 +12,17 @@ const Feed = () => {
   const { postData } = useSelector((state) => state.post);
   const { userData, notificationData } = useSelector((state) => state.user);
   const { storyList, currentUserStory } = useSelector((state) => state.story);
+  const { prevChatUsers } = useSelector((state) => state.message);
   const navigate = useNavigate();
+
+  const totalUnreadMessages =
+    prevChatUsers?.reduce((sum, u) => sum + (u.unreadCount || 0), 0) || 0;
 
   return (
     <div className="lg:w-[50%] w-full bg-black min-h-[100vh] lg:h-[100vh] relative lg:overflow-y-auto">
       <div className="w-full h-[100px] flex items-center justify-between p-[20px] lg:hidden">
         <img src={favicon} alt="" className="w-[60px]" />
-        <div className="flex items-center gap-[10px]">
+        <div className="flex items-center gap-[15px]">
           <div className="relative z-[100] cursor-pointer" onClick={() => navigate("/notifications")}>
             <FaRegHeart className="text-[white] w-[25px] h-[25px]" />
             {notificationData?.length > 0 &&
@@ -26,10 +30,14 @@ const Feed = () => {
                 <div className="w-[10px] h-[10px] bg-red-500 rounded-full absolute top-0 right-[-5px]"></div>
               )}
           </div>
-          <BiMessageRoundedDots
-            className="text-[white] cursor-pointer w-[25px] h-[25px]"
-            onClick={() => navigate("/messages")}
-          />
+          <div className="relative cursor-pointer" onClick={() => navigate("/messages")}>
+            <BiMessageRoundedDots className="text-[white] w-[25px] h-[25px]" />
+            {totalUnreadMessages > 0 && (
+              <div className="min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[10px] font-bold rounded-full absolute -top-1.5 -right-2 flex items-center justify-center animate-pulse shadow-md shadow-pink-500/40">
+                {totalUnreadMessages > 9 ? "9+" : totalUnreadMessages}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

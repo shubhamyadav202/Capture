@@ -6,8 +6,11 @@ import { setPrevChatUsers } from "../redux/messageSlice.js";
 
 function getPrevChatUsers() {
   const dispatch = useDispatch();
+  const { userData } = useSelector((state) => state.user);
   const { messages } = useSelector((state) => state.message);
+
   useEffect(() => {
+    if (!userData) return;
     const fetchUser = async () => {
       try {
         const result = await axios.get(`${serverUrl}/api/message/prevChats`, {
@@ -15,11 +18,11 @@ function getPrevChatUsers() {
         });
         dispatch(setPrevChatUsers(result.data));
       } catch (error) {
-        console.log(error);
+        console.log("Error fetching chats:", error);
       }
     };
     fetchUser();
-  }, [messages]);
+  }, [userData, messages]);
 }
 
 export default getPrevChatUsers;

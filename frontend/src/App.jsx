@@ -16,16 +16,19 @@ import getAllLoops from "./hooks/getAllLoops.jsx";
 import getAllStories from "./hooks/getAllStories.jsx";
 import Messages from "./pages/Messages.jsx";
 import MessageArea from "./pages/MessageArea.jsx";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { setOnlineUsers, setSocket } from "./redux/socketSlice.js";
 import getFollowingList from "./hooks/getFollowingList.jsx";
 import getPrevChatUsers from "./hooks/getPrevChatUsers.jsx";
 import Search from "./pages/Search.jsx";
 import Notifications from "./components/Notifications.jsx";
+import MessageToast from "./components/MessageToast.jsx";
 import getAllNotifications from "./hooks/getAllNotifications.jsx";
 import { removeStory, addStoryToList, setCurrentUserStory } from "./redux/storySlice.js";
 import { setNotificationData, setUserData } from "./redux/userSlice.js";
+import { addMessage, moveChatToTop } from "./redux/messageSlice.js";
+import axios from "axios";
 
 export const serverUrl = "http://localhost:8080";
 
@@ -40,7 +43,15 @@ function App() {
   getAllNotifications();
   const { userData, notificationData } = useSelector((state) => state.user);
   const { socket } = useSelector((state) => state.socket);
+  const { selectedUser, prevChatUsers } = useSelector((state) => state.message);
+  const [toastMessage, setToastMessage] = useState(null);
   const dispatch = useDispatch();
+
+  const selectedUserRef = useRef(selectedUser);
+  selectedUserRef.current = selectedUser;
+
+  const prevChatUsersRef = useRef(prevChatUsers);
+  prevChatUsersRef.current = prevChatUsers;
 
   useEffect(() => {
     if (userData) {
@@ -93,19 +104,104 @@ function App() {
       dispatch(setNotificationData([...notificationData, noti]));
     };
 
+    const handleNewMessage = (mess) => {
+      // Get sender user info from message
+      const senderObj =
+        typeof mess.sender === "object" && mess.sender !== null
+          ? mess.sender
+          : mess.senderUser || null;
+
+      const senderId = (
+        senderObj?._id ||
+        mess.sender ||
+        mess.senderUser?._id
+      )?.toString();
+
+      if (!senderId) return;
+
+      // Find existing chat in list, if any
+      const existingUser = prevChatUsersRef.current?.find(
+        (u) => (u._id || u)?.toString() === senderId,
+      );
+
+      // Construct clean sender user object
+      const senderUser = {
+        ...(existingUser || {}),
+        ...(senderObj || {}),
+        _id: senderId,
+        username: senderObj?.username || existingUser?.username || "",
+        profileImage: senderObj?.profileImage || existingUser?.profileImage || "",
+        name: senderObj?.name || existingUser?.name || "",
+      };
+
+      // If user details are still missing, fetch latest chats from server
+      if (!senderUser.username) {
+        axios
+          .get(`${serverUrl}/api/message/prevChats`, { withCredentials: true })
+          .then((res) => {
+            if (res.data) {
+              dispatch(setPrevChatUsers(res.data));
+            }
+          })
+          .catch(() => {});
+      }
+
+      const currentSelectedId = (
+        selectedUserRef.current?._id || selectedUserRef.current
+      )?.toString();
+
+      const isViewingThisChat =
+        window.location.pathname === "/messageArea" &&
+        currentSelectedId === senderId;
+
+      if (isViewingThisChat) {
+        dispatch(addMessage(mess));
+        dispatch(
+          moveChatToTop({
+            user: senderUser,
+            message: mess,
+            isIncoming: false,
+          }),
+        );
+        axios
+          .post(`${serverUrl}/api/message/read/${senderId}`, {}, { withCredentials: true })
+          .catch(() => {});
+      } else {
+        dispatch(
+          moveChatToTop({
+            user: senderUser,
+            message: mess,
+            isIncoming: true,
+          }),
+        );
+        setToastMessage({
+          senderUser,
+          message: mess,
+          id: Date.now(),
+        });
+      }
+    };
+
     socket.on("deletedStory", handleDeletedStory);
     socket.on("newStory", handleNewStory);
     socket.on("newNotification", handleNewNotification);
+    socket.on("newMessage", handleNewMessage);
 
     return () => {
       socket.off("deletedStory", handleDeletedStory);
       socket.off("newStory", handleNewStory);
       socket.off("newNotification", handleNewNotification);
+      socket.off("newMessage", handleNewMessage);
     };
   }, [socket, userData, notificationData, dispatch]);
 
   return (
-    <Routes>
+    <>
+      <MessageToast
+        toastData={toastMessage}
+        onClose={() => setToastMessage(null)}
+      />
+      <Routes>
       <Route
         path="/signup"
         element={!userData ? <Signup /> : <Navigate to={"/"} />}
@@ -159,6 +255,7 @@ function App() {
         element={userData ? <Notifications /> : <Navigate to={"/signin"} />}
       />
     </Routes>
+    </>
   );
 }
 
