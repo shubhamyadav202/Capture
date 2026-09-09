@@ -92,10 +92,10 @@ Built with an emphasis on production-ready architecture, security (JWT stored in
 ```mermaid
 flowchart TD
     subgraph Client ["Frontend (React 19 + Vite + Tailwind CSS v4)"]
-        UI[User Interface & Pages]
-        Redux[Redux Toolkit Store\nuser | post | loop | story | message | socket]
-        SocketClient[Socket.io Client]
-        AxiosClient[Axios HTTP Client]
+        UI["User Interface & Pages"]
+        Redux["Redux Toolkit Store<br/>(user, post, loop, story, message, socket)"]
+        SocketClient["Socket.io Client"]
+        AxiosClient["Axios HTTP Client"]
         
         UI -->|Dispatch Actions| Redux
         Redux -->|Select State| UI
@@ -104,19 +104,19 @@ flowchart TD
     end
 
     subgraph Server ["Backend (Node.js + Express 5)"]
-        Router[Express API Routers\nauth | user | post | loop | story | message]
-        AuthMW[isAuth Middleware\nJWT Verification]
-        MulterMW[Multer Middleware\nTemp File Uploads]
-        SocketServer[Socket.io Server\nConnection & Room Handling]
+        Router["Express API Routers<br/>(auth, user, post, loop, story, message)"]
+        AuthMW["isAuth Middleware<br/>(JWT Verification)"]
+        MulterMW["Multer Middleware<br/>(Temp File Uploads)"]
+        SocketServer["Socket.io Server<br/>(Connection & Room Handling)"]
         
         Router --> AuthMW
         Router --> MulterMW
     end
 
     subgraph External ["Services & Storage"]
-        MongoDb[(MongoDB Atlas\nTTL Indexes, Relational Schema)]
-        Cloudinary[(Cloudinary CDN\nMedia Storage & Transformation)]
-        Mailer[Nodemailer SMTP\nOTP Email Delivery]
+        MongoDb[("MongoDB Atlas<br/>TTL Indexes & Schemas")]
+        Cloudinary[("Cloudinary CDN<br/>Media Storage & Streaming")]
+        Mailer["Nodemailer SMTP<br/>OTP Email Delivery"]
     end
 
     AxiosClient -->|HTTP REST Requests + Cookies| Router
@@ -126,7 +126,7 @@ flowchart TD
     Router -->|Mongoose Queries| MongoDb
     Router -->|Trigger OTP Emails| Mailer
     Router -->|Broadcast Events| SocketServer
-    SocketServer -->|Emit Events: newMessage, newNotification, newStory| SocketClient
+    SocketServer -->|Emit Real-time Events| SocketClient
 ```
 
 ---
@@ -401,16 +401,3 @@ cd Capture
 
 4. **Modular Redux Slices**:
    - Partitioned client state into 6 isolated domains (`user`, `post`, `loop`, `story`, `message`, `socket`). This prevents broad component re-renders, optimizes memory consumption, and allows predictable state synchronization between REST queries and incoming WebSocket payloads.
-
----
-
-## 📜 License
-
-This project is licensed under the [ISC License](LICENSE).
-
----
-
-<div align="center">
-  <b>Built with ❤️ by Shubham Yadav</b><br>
-  <i>Show some star ⭐️ love if you found this project helpful!</i>
-</div>
