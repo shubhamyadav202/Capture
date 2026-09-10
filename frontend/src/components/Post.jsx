@@ -8,11 +8,13 @@ import { MdOutlineComment } from "react-icons/md";
 import { FaRegBookmark } from "react-icons/fa6";
 import { FaBookmark } from "react-icons/fa6";
 import { IoSend, IoClose } from "react-icons/io5";
+import { FiSend } from "react-icons/fi";
 import { setPostData } from "../redux/postSlice.js";
 import { setProfileData, setUserData } from "../redux/userSlice.js";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
 import FollowButton from "./FollowButton.jsx";
+import SharePostModal from "./SharePostModal.jsx";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { RiDeleteBin5Fill } from "react-icons/ri";
@@ -23,6 +25,7 @@ const Post = ({ post }) => {
   const { postData } = useSelector((state) => state.post);
   const { socket } = useSelector((state) => state.socket);
   const [showComment, setShowComment] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [message, setMessage] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentLoading, setCommentLoading] = useState(false);
@@ -244,6 +247,12 @@ const Post = ({ post }) => {
             <MdOutlineComment className="w-[25px] cursor-pointer h-[25px]" />
             <span>{post.comments.length}</span>
           </div>
+          <div
+            className="flex justify-center items-center gap-[5px]"
+            onClick={() => setShowShare(true)}
+          >
+            <FiSend className="w-[24px] cursor-pointer h-[24px] hover:text-purple-600 transition-colors" />
+          </div>
         </div>
 
         <div className="flex items-center gap-[15px]">
@@ -380,6 +389,13 @@ const Post = ({ post }) => {
             })}
           </div>
         </div>
+      )}
+
+      {showShare && (
+        <SharePostModal
+          postId={post._id}
+          onClose={() => setShowShare(false)}
+        />
       )}
     </div>
   );

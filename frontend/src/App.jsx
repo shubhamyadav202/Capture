@@ -11,6 +11,7 @@ import Profile from "./pages/Profile.jsx";
 import EditProfile from "./pages/EditProfile.jsx";
 import Upload from "./pages/Upload.jsx";
 import Loops from "./pages/Loops.jsx";
+import PostDetail from "./pages/PostDetail.jsx";
 import Story from "./pages/Story.jsx";
 import getAllLoops from "./hooks/getAllLoops.jsx";
 import getAllStories from "./hooks/getAllStories.jsx";
@@ -242,6 +243,18 @@ function App() {
       <Route
         path="/loops"
         element={userData ? <Loops /> : <Navigate to={"/signin"} />}
+      />
+      <Route
+        path="/loops/:loopId"
+        element={userData ? <Loops /> : <Navigate to={"/signin"} />}
+      />
+      <Route
+        path="/loop/:loopId"
+        element={userData ? <Loops /> : <Navigate to={"/signin"} />}
+      />
+      <Route
+        path="/post/:postId"
+        element={userData ? <PostDetail /> : <Navigate to={"/signin"} />}
       />
       <Route
         path="/messageArea"

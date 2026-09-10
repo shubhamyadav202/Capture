@@ -125,10 +125,23 @@ const Messages = () => {
                         New message{user.unreadCount > 1 ? `s (${user.unreadCount})` : ""}
                       </span>
                     ) : user.lastMessage ? (
-                      <span className="text-gray-400 text-[13px] truncate mt-0.5">
-                        {user.lastMessage.message ||
-                          (user.lastMessage.image ? "📷 Photo" : "")}
-                      </span>
+                      (() => {
+                        const isLastVideo =
+                          user.lastMessage.mediaType === "video" ||
+                          (user.lastMessage.image &&
+                            (user.lastMessage.image.includes("/video/upload/") ||
+                              user.lastMessage.image.match(/\.(mp4|webm|mov|mkv|avi)($|\?)/i)));
+                        return (
+                          <span className="text-gray-400 text-[13px] truncate mt-0.5">
+                            {user.lastMessage.message ||
+                              (isLastVideo
+                                ? "🎥 Video"
+                                : user.lastMessage.image
+                                ? "📷 Photo"
+                                : "")}
+                          </span>
+                        );
+                      })()
                     ) : isOnline ? (
                       <span className="text-[#0aff0a] text-[13px] mt-0.5">
                         Active Now

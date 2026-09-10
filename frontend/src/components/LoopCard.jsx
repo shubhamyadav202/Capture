@@ -8,12 +8,14 @@ import { FaRegHeart } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { MdOutlineComment } from "react-icons/md";
+import { FiSend } from "react-icons/fi";
 import { setLoopData } from "../redux/loopSlice.js";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
 import { IoSend, IoClose } from "react-icons/io5";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { ClipLoader } from "react-spinners";
+import ShareLoopModal from "./ShareLoopModal.jsx";
 
 const LoopCard = ({ loop }) => {
   const navigate = useNavigate();
@@ -31,6 +33,7 @@ const LoopCard = ({ loop }) => {
   const [commentLoading, setCommentLoading] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
   const [showComment, setShowComment] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [message, setMessage] = useState("");
   const commentRef = useRef();
 
@@ -212,6 +215,7 @@ const LoopCard = ({ loop }) => {
   }, [socket, loopData, dispatch]);
 
   return (
+    <>
     <div className="w-full lg:w-[480px] h-[100vh] overflow-hidden flex items-center justify-center border-l-2 border-r-2 border-gray-800 relative">
       {showHeart && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 heart-animation z-50">
@@ -410,7 +414,7 @@ const LoopCard = ({ loop }) => {
             </div>
             <div>{loop.likes.length}</div>
           </div>
-          <div className="flex flex-col items-center cursor-pointer ">
+          <div className="flex flex-col items-center cursor-pointer">
             <div onClick={() => setShowComment(true)}>
               <MdOutlineComment className="w-[25px] cursor-pointer h-[25px]" />
             </div>
@@ -430,10 +434,24 @@ const LoopCard = ({ loop }) => {
                 ))}
             </div>
           </div>
+          <div
+            className="flex flex-col items-center cursor-pointer"
+            onClick={() => setShowShare(true)}
+          >
+            <FiSend className="w-[24px] h-[24px] hover:text-purple-400 transition-colors" />
+          </div>
 
         </div>
       </div>
     </div>
+
+    {showShare && (
+      <ShareLoopModal
+        loopId={loop._id}
+        onClose={() => setShowShare(false)}
+      />
+    )}
+  </>
   );
 };
 

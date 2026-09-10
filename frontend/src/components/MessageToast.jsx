@@ -21,8 +21,16 @@ const MessageToast = ({ toastData, onClose }) => {
   if (!toastData) return null;
 
   const { senderUser, message } = toastData;
+
+  const isVideo =
+    message?.mediaType === "video" ||
+    (message?.image &&
+      (message.image.includes("/video/upload/") ||
+        message.image.match(/\.(mp4|webm|mov|mkv|avi)($|\?)/i)));
+
   const previewText =
-    message?.message || (message?.image ? "📷 Sent an image" : "New message");
+    message?.message ||
+    (isVideo ? "🎥 Sent a video" : message?.image ? "📷 Sent a photo" : "New message");
 
   const handleClick = () => {
     if (senderUser) {

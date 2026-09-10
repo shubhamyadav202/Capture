@@ -1,10 +1,9 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { IoArrowBackSharp } from "react-icons/io5";
+import { IoArrowBackSharp, IoSend, IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import dp from "../assets/dp.jpg";
 import { FaRegImage } from "react-icons/fa6";
-import { IoSend } from "react-icons/io5";
 import { serverUrl } from "../App.jsx";
 import {
   setMessages,
@@ -21,31 +20,43 @@ const MessageArea = () => {
   const { selectedUser, messages } = useSelector((state) => state.message);
   const { userData } = useSelector((state) => state.user);
   const [input, setInput] = useState("");
-  const [frontendImage, setFrontendImage] = useState(null);
-  const [backendImage, setBackendImage] = useState(null);
+  const [frontendMedia, setFrontendMedia] = useState(null);
+  const [backendMedia, setBackendMedia] = useState(null);
+  const [isVideo, setIsVideo] = useState(false);
   const [sending, setSending] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const imageInput = useRef();
+  const mediaInput = useRef();
 
-  const handleImage = (e) => {
+  const handleMedia = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setBackendImage(file);
-    setFrontendImage(URL.createObjectURL(file));
+    setBackendMedia(file);
+    setFrontendMedia(URL.createObjectURL(file));
+    setIsVideo(file.type.startsWith("video"));
+  };
+
+  const handleClearMedia = () => {
+    setFrontendMedia(null);
+    setBackendMedia(null);
+    setIsVideo(false);
+    if (mediaInput.current) {
+      mediaInput.current.value = "";
+    }
   };
 
   const handleSubmitMessage = async (e) => {
     e.preventDefault();
-    if (!selectedUser?._id || (!input.trim() && !backendImage) || sending) return;
+    if (!selectedUser?._id || (!input.trim() && !backendMedia) || sending) return;
     setSending(true);
     try {
       const formData = new FormData();
       formData.append("message", input);
 
-      if (backendImage) {
-        formData.append("image", backendImage);
+      if (backendMedia) {
+        formData.append("image", backendMedia);
+        formData.append("mediaType", isVideo ? "video" : "image");
       }
 
       const result = await axios.post(
@@ -63,8 +74,7 @@ const MessageArea = () => {
         }),
       );
       setInput("");
-      setBackendImage(null);
-      setFrontendImage(null);
+      handleClearMedia();
     } catch (error) {
       console.log(error.response?.data || error);
     } finally {
@@ -159,18 +169,45 @@ const MessageArea = () => {
           className="w-[90%] max-w-[800px] h-[80%] rounded-full bg-[#131616] flex items-center gap-[10px] px-[20px] relative"
           onSubmit={handleSubmitMessage}
         >
-          {frontendImage && (
-            <div className="w-[100px] rounded-2xl h-[100px] absolute top-[-120px] right-[10px] overflow-hidden border border-gray-700">
-              <img src={frontendImage} className="h-full w-full object-cover" alt="" />
+          {frontendMedia && (
+            <div className="w-[120px] h-[120px] rounded-2xl absolute top-[-140px] right-[10px] overflow-hidden border-2 border-purple-500 bg-black shadow-2xl relative group">
+              {isVideo ? (
+                <video
+                  src={frontendMedia}
+                  className="h-full w-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                />
+              ) : (
+                <img
+                  src={frontendMedia}
+                  className="h-full w-full object-cover"
+                  alt=""
+                />
+              )}
+              <button
+                type="button"
+                onClick={handleClearMedia}
+                className="absolute top-1 right-1 bg-black/80 hover:bg-red-600 text-white rounded-full p-1 transition-all cursor-pointer shadow-md"
+                title="Remove attachment"
+              >
+                <IoClose size={16} />
+              </button>
+              {isVideo && (
+                <span className="absolute bottom-1.5 left-1.5 bg-black/75 text-[10px] font-semibold text-white px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/20">
+                  Video
+                </span>
+              )}
             </div>
           )}
 
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,video/*"
             hidden
-            ref={imageInput}
-            onChange={handleImage}
+            ref={mediaInput}
+            onChange={handleMedia}
           />
 
           <input
@@ -184,11 +221,12 @@ const MessageArea = () => {
           <div>
             <FaRegImage
               className="w-[28px] h-[28px] mt-[6px] cursor-pointer text-white hover:text-gray-300 transition-all"
-              onClick={() => imageInput.current?.click()}
+              onClick={() => mediaInput.current?.click()}
+              title="Attach photo or video"
             />
           </div>
 
-          {(input || frontendImage) && (
+          {(input || frontendMedia) && (
             <button
               type="submit"
               disabled={sending}
