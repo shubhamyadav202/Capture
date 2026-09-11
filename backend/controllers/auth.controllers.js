@@ -4,12 +4,12 @@ import bcrypt from "bcryptjs";
 import sendMail from "../config/mail.js";
 
 const getCookieOptions = () => {
-  const isProduction = process.env.NODE_ENV === "production";
+  
   return {
     httpOnly: true,
     maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: true,
+    sameSite: "none",
   };
 };
 
