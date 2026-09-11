@@ -32,7 +32,7 @@ import { addMessage, moveChatToTop } from "./redux/messageSlice.js";
 import axios from "axios";
 
 export const serverUrl =
-  import.meta.env.VITE_SERVER_URL || "http://localhost:8080";
+  import.meta.env.VITE_SERVER_URL || "https://capture-backend-3p5j.onrender.com";
 
 function App() {
   getCurrentUser();
