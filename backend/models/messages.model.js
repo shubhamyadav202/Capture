@@ -16,6 +16,19 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    mediaType: {
+      type: String,
+      enum: ["image", "video"],
+      default: "image",
+    },
+    sharedPost: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+    },
+    sharedLoop: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Loop",
+    },
     isRead: {
       type: Boolean,
       default: false,

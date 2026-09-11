@@ -288,3 +288,22 @@ export const deleteComment = async (req, res) => {
   }
 };
 
+export const getLoopById = async (req, res) => {
+  try {
+    const { loopId } = req.params;
+    const loop = await Loop.findById(loopId)
+      .populate("author", "name username profileImage profession bio")
+      .populate("comments.author", "name username profileImage");
+
+    if (!loop) {
+      return res.status(404).json({ message: "Loop not found" });
+    }
+
+    return res.status(200).json(loop);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: `getLoopById error: ${error?.message || error}` });
+  }
+};
+

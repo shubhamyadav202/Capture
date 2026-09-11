@@ -4,6 +4,7 @@ import { upload } from "../middlewares/multer.js";
 import {
   uploadLoop,
   getAllLoops,
+  getLoopById,
   like,
   comment,
   deleteComment,
@@ -15,6 +16,9 @@ const loopRouter = express.Router();
 loopRouter.post("/upload", isAuth, upload.single("media"), uploadLoop);
 
 loopRouter.get("/getAll", isAuth, getAllLoops);
+
+loopRouter.get("/getLoop/:loopId", isAuth, getLoopById);
+loopRouter.get("/:loopId", isAuth, getLoopById);
 
 loopRouter.get("/like/:loopId", isAuth, like);
 

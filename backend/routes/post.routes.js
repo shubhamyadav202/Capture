@@ -6,6 +6,7 @@ import {
   deleteComment,
   deletePost,
   getAllPosts,
+  getPostById,
   like,
   saved,
   uploadPost,
@@ -16,6 +17,9 @@ const postRouter = express.Router();
 postRouter.post("/upload", isAuth, upload.single("media"), uploadPost);
 
 postRouter.get("/getAll", isAuth, getAllPosts);
+
+postRouter.get("/getPost/:postId", isAuth, getPostById);
+postRouter.get("/:postId", isAuth, getPostById);
 
 postRouter.get("/like/:postId", isAuth, like);
 
