@@ -16,24 +16,11 @@ const port = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cookieParser());
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
-        callback(null, true);
-      } else {
-        callback(null, true);
-      }
-    },
-    credentials: true,
-  }),
-);
+app.use(cors({
+   origin : "https://capture-7089.onrender.com",
+  credentials : true
+}))
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
