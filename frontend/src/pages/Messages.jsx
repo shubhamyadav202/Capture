@@ -1,6 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { IoArrowBackSharp } from "react-icons/io5";
 import { BiMessageRoundedDots } from "react-icons/bi";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { RiDeleteBin5Fill } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import OnlineUser from "../components/OnlineUser.jsx";
@@ -8,6 +10,7 @@ import {
   setSelectedUser,
   markChatAsRead,
   setPrevChatUsers,
+  removeChatUser,
 } from "../redux/messageSlice.js";
 import { ClipLoader } from "react-spinners";
 import dp from "../assets/dp.jpg";
@@ -19,7 +22,21 @@ const Messages = () => {
   const { userData } = useSelector((state) => state.user);
   const { onlineUsers } = useSelector((state) => state.socket);
   const { prevChatUsers } = useSelector((state) => state.message);
+  const [openMenuUserId, setOpenMenuUserId] = useState(null);
+  const [deletingUserId, setDeletingUserId] = useState(null);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenMenuUserId(null);
+    };
+    if (openMenuUserId) {
+      document.addEventListener("click", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [openMenuUserId]);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -34,6 +51,22 @@ const Messages = () => {
     };
     fetchChats();
   }, []);
+
+  const handleDeleteChat = async (targetUserId) => {
+    if (!targetUserId || deletingUserId) return;
+    setDeletingUserId(targetUserId);
+    try {
+      await axios.delete(`${serverUrl}/api/message/deleteChat/${targetUserId}`, {
+        withCredentials: true,
+      });
+      dispatch(removeChatUser(targetUserId));
+      setOpenMenuUserId(null);
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
 
   const totalUnread =
     prevChatUsers?.reduce((sum, u) => sum + (u.unreadCount || 0), 0) || 0;
@@ -150,13 +183,56 @@ const Messages = () => {
                   </div>
                 </div>
 
-                {hasUnread && (
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
+                <div className="flex items-center gap-2 flex-shrink-0 ml-2 relative">
+                  {hasUnread && (
                     <div className="min-w-[20px] h-[20px] px-1.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md shadow-pink-500/30">
                       {user.unreadCount > 9 ? "9+" : user.unreadCount}
                     </div>
+                  )}
+
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuUserId(openMenuUserId === user._id ? null : user._id);
+                      }}
+                      title="Chat options"
+                    >
+                      <BsThreeDotsVertical className="w-[16px] h-[16px]" />
+                    </button>
+
+                    {openMenuUserId === user._id && (
+                      <div
+                        className="absolute right-0 top-10 z-50 min-w-[145px] bg-[#1a1f26] border border-gray-700/90 rounded-xl shadow-2xl py-1 backdrop-blur-md overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          disabled={deletingUserId === user._id}
+                          className="w-full text-left px-3.5 py-2.5 text-[14px] text-red-500 hover:bg-red-500/15 flex items-center gap-2.5 font-medium transition-colors cursor-pointer disabled:opacity-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteChat(user._id);
+                          }}
+                        >
+                          {deletingUserId === user._id ? (
+                            <>
+                              <ClipLoader size={14} color="#ef4444" />
+                              <span>Deleting...</span>
+                            </>
+                          ) : (
+                            <>
+                              <RiDeleteBin5Fill className="w-4 h-4 flex-shrink-0" />
+                              <span>Delete Chat</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             );
           })

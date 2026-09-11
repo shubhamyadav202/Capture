@@ -76,6 +76,37 @@ const messageSlice = createSlice({
         return u;
       });
     },
+    removeChatUser: (state, action) => {
+      const targetId = action.payload?.toString();
+      if (!targetId) return;
+      if (state.prevChatUsers) {
+        state.prevChatUsers = state.prevChatUsers.filter(
+          (u) => (u._id || u)?.toString() !== targetId
+        );
+      }
+      if (
+        state.selectedUser &&
+        (state.selectedUser._id || state.selectedUser)?.toString() === targetId
+      ) {
+        state.selectedUser = null;
+        state.messages = [];
+      }
+    },
+    removeMessage: (state, action) => {
+      const messageId = action.payload?.toString();
+      if (!messageId) return;
+      state.messages = state.messages.filter(
+        (m) => (m._id || m)?.toString() !== messageId
+      );
+      if (state.prevChatUsers) {
+        state.prevChatUsers = state.prevChatUsers.map((u) => {
+          if ((u.lastMessage?._id || u.lastMessage)?.toString() === messageId) {
+            return { ...u, lastMessage: null };
+          }
+          return u;
+        });
+      }
+    },
   },
 });
 
@@ -86,6 +117,8 @@ export const {
   setPrevChatUsers,
   moveChatToTop,
   markChatAsRead,
+  removeChatUser,
+  removeMessage,
 } = messageSlice.actions;
 
 export default messageSlice.reducer;

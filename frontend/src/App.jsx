@@ -28,7 +28,7 @@ import MessageToast from "./components/MessageToast.jsx";
 import getAllNotifications from "./hooks/getAllNotifications.jsx";
 import { removeStory, addStoryToList, setCurrentUserStory } from "./redux/storySlice.js";
 import { setNotificationData, setUserData } from "./redux/userSlice.js";
-import { addMessage, moveChatToTop } from "./redux/messageSlice.js";
+import { addMessage, moveChatToTop, removeChatUser, removeMessage } from "./redux/messageSlice.js";
 import axios from "axios";
 
 export const serverUrl =
@@ -184,16 +184,33 @@ function App() {
       }
     };
 
+    const handleDeletedChat = (data) => {
+      const targetId = (data.targetUserId || data.deletedBy)?.toString();
+      if (targetId) {
+        dispatch(removeChatUser(targetId));
+      }
+    };
+
+    const handleDeletedMessage = (data) => {
+      if (data?.messageId) {
+        dispatch(removeMessage(data.messageId));
+      }
+    };
+
     socket.on("deletedStory", handleDeletedStory);
     socket.on("newStory", handleNewStory);
     socket.on("newNotification", handleNewNotification);
     socket.on("newMessage", handleNewMessage);
+    socket.on("deletedChat", handleDeletedChat);
+    socket.on("deletedMessage", handleDeletedMessage);
 
     return () => {
       socket.off("deletedStory", handleDeletedStory);
       socket.off("newStory", handleNewStory);
       socket.off("newNotification", handleNewNotification);
       socket.off("newMessage", handleNewMessage);
+      socket.off("deletedChat", handleDeletedChat);
+      socket.off("deletedMessage", handleDeletedMessage);
     };
   }, [socket, userData, notificationData, dispatch]);
 
