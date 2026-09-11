@@ -59,7 +59,8 @@ Built with an emphasis on production-ready architecture, robust security (JWT st
 - **Active Presence Tracking**: Real-time online/offline green indicator based on connected socket mappings.
 - **Unread Message Badges & Reordering**: Conversations dynamically sort by the most recent message with live unread count badges.
 - **Interactive Message Toasts**: Floating interactive alerts notify users of incoming messages when browsing other pages.
-- **Live Media Upload Preview**: Preview selected image or video before sending with single-click removal.
+- **Conversation Deletion**: Delete entire conversations via the three dots vertical options menu (`BsThreeDotsVertical`), triggering database cleanup and real-time socket updates.
+- **Sender Message Deletion**: Senders can click, double-click, or hold (long-press) on their sent messages to reveal the **"Delete Message"** option and delete that specific message from the chat with real-time socket synchronization. Incoming messages from the receiver cannot be deleted by the user.
 
 ### 4. ⏳ Ephemeral 24-Hour Stories
 - **Automated Self-Destruct**: Powered by MongoDB native TTL indexes that automatically purge documents after 24 hours (`expires: 86400`).
@@ -196,6 +197,8 @@ The MongoDB database utilizes 7 interconnected schemas engineered with relationa
 | `POST` | `/api/message/read/:senderId` | Protected | Mark incoming messages from sender as read |
 | `POST` | `/api/message/share/:receiverId` | Protected | **Share a feed post** directly to a user in chat |
 | `POST` | `/api/message/shareLoop/:receiverId`| Protected | **Share a video Loop** directly to a user in chat |
+| `DELETE`| `/api/message/deleteChat/:targetUserId`| Protected | **Delete entire chat conversation** and messages with target user |
+| `DELETE`| `/api/message/deleteMessage/:messageId`| Protected | **Delete a specific message** from conversation |
 
 ---
 
@@ -209,6 +212,8 @@ The MongoDB database utilizes 7 interconnected schemas engineered with relationa
 | `newNotification`| Server $\rightarrow$ Client | `Notification` object | Emits real-time notification alert (like, comment, follow) |
 | `newStory` | Server $\rightarrow$ Client | `Story` object | Broadcasts newly posted story to update followers' story bars |
 | `deletedStory` | Server $\rightarrow$ Client | `{ storyId, authorId }` | Broadcasts story deletion event to instantly clear UI |
+| `deletedChat` | Server $\rightarrow$ Client | `{ deletedBy, targetUserId }` | Broadcasts conversation deletion to remove chat from view |
+| `deletedMessage`| Server $\rightarrow$ Client | `{ messageId }` | Broadcasts message deletion to remove message from recipient chat |
 | `likedPost` | Server $\rightarrow$ Client | `{ postId, likes }` | Broadcasts real-time like count changes for posts |
 | `commentedPost`| Server $\rightarrow$ Client | `{ postId, comments }` | Broadcasts new comments or deletions on posts |
 | `deletedPost` | Server $\rightarrow$ Client | `{ postId }` | Broadcasts post deletion for immediate UI removal |

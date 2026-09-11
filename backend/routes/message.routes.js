@@ -1,7 +1,7 @@
 import express from "express";
 import isAuth from "../middlewares/isAuth.js";
 import { upload } from "../middlewares/multer.js";
-import {getAllMessages, getPrevUserChats, sendMessage, markAsRead, sharePost, shareLoop} from "../controllers/message.controllers.js"
+import {getAllMessages, getPrevUserChats, sendMessage, markAsRead, sharePost, shareLoop, deleteChat, deleteMessage} from "../controllers/message.controllers.js"
 
 const messageRouter = express.Router();
 
@@ -16,5 +16,9 @@ messageRouter.post("/read/:senderId", isAuth, markAsRead);
 messageRouter.post("/share/:receiverId", isAuth, sharePost);
 
 messageRouter.post("/shareLoop/:receiverId", isAuth, shareLoop);
+
+messageRouter.delete("/deleteChat/:targetUserId", isAuth, deleteChat);
+
+messageRouter.delete("/deleteMessage/:messageId", isAuth, deleteMessage);
 
 export default messageRouter;

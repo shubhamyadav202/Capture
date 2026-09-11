@@ -72,30 +72,39 @@ const Loops = () => {
   };
 
   return (
-    <div className="w-screen h-screen bg-black overflow-hidden flex justify-center items-center relative">
-      <div className="w-full h-[80px] flex items-center gap-[20px] px-[20px] fixed top-[10px] left-[10px] z-[100]">
-        <IoArrowBackSharp
-          className="text-white cursor-pointer w-[25px] h-[25px] hover:text-gray-300 transition-colors"
-          onClick={handleBack}
-        />
-        <h1 className="text-white text-[20px] font-semibold">Loops</h1>
-      </div>
-
+    <div className="w-screen h-[100dvh] bg-black overflow-hidden flex justify-center items-center relative">
       {!loopData && fetchingLoop ? (
-        <div className="flex flex-col items-center gap-3">
+        <div className="w-full h-full flex flex-col items-center justify-center relative">
+          <div className="w-full h-[60px] flex items-center gap-3 px-4 absolute top-0 left-0 z-[100]">
+            <IoArrowBackSharp
+              className="text-white cursor-pointer w-6 h-6 hover:text-gray-300 transition-colors"
+              onClick={handleBack}
+            />
+            <h1 className="text-white text-[20px] font-semibold">Loops</h1>
+          </div>
           <ClipLoader size={40} color="white" />
-          <span className="text-gray-400 text-sm">Loading loops...</span>
+          <span className="text-gray-400 text-sm mt-3">Loading loops...</span>
         </div>
       ) : (
-        <div className="h-[100vh] overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+        <div className="w-full h-[100dvh] overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-center">
           {displayedLoops.map((loop, index) => (
-            <div className="h-screen snap-start" key={loop?._id || index}>
-              <LoopCard loop={loop} />
+            <div
+              className="w-full lg:w-[480px] h-[100dvh] snap-start shrink-0 relative flex justify-center items-center"
+              key={loop?._id || index}
+            >
+              <LoopCard loop={loop} onBack={handleBack} />
             </div>
           ))}
           {displayedLoops.length === 0 && !fetchingLoop && (
-            <div className="h-screen flex items-center justify-center text-gray-500">
-              No loops available
+            <div className="h-[100dvh] w-full flex flex-col items-center justify-center text-gray-500 relative">
+              <div className="w-full h-[60px] flex items-center gap-3 px-4 absolute top-0 left-0 z-[100]">
+                <IoArrowBackSharp
+                  className="text-white cursor-pointer w-6 h-6 hover:text-gray-300 transition-colors"
+                  onClick={handleBack}
+                />
+                <h1 className="text-white text-[20px] font-semibold">Loops</h1>
+              </div>
+              <span>No loops available</span>
             </div>
           )}
         </div>

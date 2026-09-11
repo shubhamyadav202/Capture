@@ -306,3 +306,114 @@ export const shareLoop = async (req, res) => {
     return res.status(500).json({ message: `share loop error ${error}` });
   }
 };
+
+export const deleteChat = async (req, res) => {
+  try {
+    const currentUserId = req.userId;
+    const targetUserId = req.params.targetUserId;
+
+    if (!targetUserId) {
+      return res.status(400).json({ message: "targetUserId is required" });
+    }
+
+    // Find conversation between current user and target user
+    const conversation = await Conversation.findOne({
+      participants: { $all: [currentUserId, targetUserId] },
+    });
+
+    if (conversation) {
+      // Delete all messages referenced in conversation.messages
+      if (conversation.messages && conversation.messages.length > 0) {
+        await Message.deleteMany({ _id: { $in: conversation.messages } });
+      }
+
+      // Also delete any direct messages between these two users
+      await Message.deleteMany({
+        $or: [
+          { sender: currentUserId, receiver: targetUserId },
+          { sender: targetUserId, receiver: currentUserId },
+        ],
+      });
+
+      // Delete the conversation document
+      await Conversation.findByIdAndDelete(conversation._id);
+    } else {
+      // Clean up any direct messages if no conversation document
+      await Message.deleteMany({
+        $or: [
+          { sender: currentUserId, receiver: targetUserId },
+          { sender: targetUserId, receiver: currentUserId },
+        ],
+      });
+    }
+
+    // Notify the other user via socket if connected
+    const targetSocketId = getSocketId(targetUserId);
+    if (targetSocketId) {
+      io.to(targetSocketId).emit("deletedChat", {
+        deletedBy: currentUserId,
+        targetUserId: currentUserId,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Chat deleted successfully",
+      targetUserId,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: `Delete chat error: ${error?.message || error}` });
+  }
+};
+
+export const deleteMessage = async (req, res) => {
+  try {
+    const currentUserId = req.userId;
+    const { messageId } = req.params;
+
+    if (!messageId) {
+      return res.status(400).json({ message: "messageId is required" });
+    }
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    const senderId = message.sender ? (message.sender._id || message.sender).toString() : null;
+    const receiverId = message.receiver ? (message.receiver._id || message.receiver).toString() : null;
+    const currentIdStr = currentUserId.toString();
+
+    // Enforce that only the sender who sent the message can delete it
+    if (senderId !== currentIdStr) {
+      return res.status(403).json({ message: "You can only delete messages sent by you" });
+    }
+
+    // Pull from conversation messages array
+    await Conversation.updateMany(
+      { messages: messageId },
+      { $pull: { messages: messageId } }
+    );
+
+    // Delete the message document
+    await Message.findByIdAndDelete(messageId);
+
+    // Notify the receiver via Socket.io if connected
+    if (receiverId) {
+      const receiverSocketId = getSocketId(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("deletedMessage", { messageId });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Message deleted successfully",
+      messageId,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: `Delete message error: ${error?.message || error}` });
+  }
+};
+
+
