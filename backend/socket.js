@@ -7,7 +7,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: (origin, callback) => callback(null, true),
+    origin: "https://capture-7089.onrender.com",
     methods: ["GET", "POST"],
     credentials: true,
   },
